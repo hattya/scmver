@@ -160,6 +160,66 @@ class Version(object):
             v.local = '.'.join(str(int(s)) if s.isdigit() else s for s in _sep_re.split(v.local))
         return v
 
+    def update(self, spec, value=1):
+        if self.local:
+            raise VersionError('local version identifiers exists')
+
+        def update(ver, val):
+            if ver < 0:
+                return val if val > 0 else -1
+            return ver + val
+
+        def zero(v):
+            return v if v >= 0 else 0
+
+        spec = spec.lower()
+        if spec == 'major':
+            self.release = (zero(self.release[0] + value),) + self.release[1:]
+            self._pre = self._post = self._dev = None
+        elif spec == 'minor':
+            if len(self.release) < 2:
+                self.release += (zero(value),)
+            else:
+                self.release = self.release[:1] + (zero(self.release[1] + value),) + self.release[2:]
+            self._pre = self._post = self._dev = None
+        elif spec in ('micro', 'patch'):
+            if len(self.release) < 2:
+                self.release += (0, zero(value),)
+            elif len(self.release) < 3:
+                self.release += (zero(value),)
+            else:
+                self.release = self.release[:2] + (zero(self.release[2] + value),) + self.release[3:]
+            self._pre = self._post = self._dev = None
+        elif spec in ('pre', 'dev'):
+            v = getattr(self, '_' + spec)
+            if not v:
+                raise VersionError('{}release segment does not exist'.format('pre-' if spec != 'dev' else 'development '))
+            setattr(self, '_' + spec, v[:3] + (update(v[3], value),))
+        elif spec == 'post':
+            if self._post:
+                if self._post[1]:
+                    self._post = self._post[:3] + (update(self._post[3], value),)
+                else:
+                    self._post = self._post[:3] + (zero(self._post[3] + value),)
+            elif value >= 0:
+                self._post = ('.', 'post', '', value if value > 1 else -1)
+        elif spec.endswith('.dev'):
+            spec = spec[:-len('.dev')]
+            if spec == 'major':
+                i = 1
+            elif spec == 'minor':
+                i = 2
+            elif spec in ('micro', 'patch'):
+                i = 3
+            else:
+                raise VersionError('invalid segment specifier')
+            if value < 0:
+                raise VersionError('invalid value')
+
+            self.release = self.release[:i] + (0,) * (len(self.release) - i)
+            self.update(spec)
+            self._dev = ('.', 'dev', '', value if value > 1 else -1)
+
 
 class VersionError(ValueError):
     pass
