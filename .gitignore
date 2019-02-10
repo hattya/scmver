@@ -1,0 +1,9 @@
+*.egg-info/
+.tox/
+build/
+dist/
+*.egg
+*.py?
+*.sw?
+.coverage
+scmver/__version__.py

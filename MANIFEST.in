@@ -1,0 +1,3 @@
+include README.rst
+recursive-include scmver *.py
+recursive-include tests  *.py
