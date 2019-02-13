@@ -24,10 +24,12 @@
 #   SOFTWARE.
 #
 
+import collections
+import datetime
 import re
 
 
-__all__ = ['Version', 'VersionError']
+__all__ = ['next_version', 'SCMInfo', 'Version', 'VersionError']
 
 _pep440_re = re.compile(r"""
     \A
@@ -80,6 +82,33 @@ _pep440_re = re.compile(r"""
     \Z
 """, re.IGNORECASE | re.VERBOSE)
 _sep_re = re.compile(r'[-._]')
+_version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
+
+
+def next_version(info, spec='post', local='{local:%Y-%m-%d}', version=_version_re):
+    m = version.search(info.tag)
+    if not m:
+        raise VersionError('cannot parse version from SCM tag')
+
+    pv = Version(m.group('version'))
+    if info.distance > 0:
+        pv.update(spec, info.distance)
+
+    if callable(local):
+        lv = local(info)
+    elif info.dirty:
+        lv = local.format(distance=info.distance,
+                          revision=info.revision,
+                          branch=info.branch,
+                          utc=datetime.datetime.utcnow(),
+                          local=datetime.datetime.now())
+    else:
+        lv = None
+    return str(pv) if not lv else '{}+{}'.format(pv, lv)
+
+
+SCMInfo = collections.namedtuple('SCMInfo', ('tag', 'distance', 'revision', 'dirty', 'branch'))
+SCMInfo.__new__.__defaults__ = ('0.0', 0, None, False, None)
 
 
 class Version(object):

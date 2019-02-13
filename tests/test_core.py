@@ -24,6 +24,8 @@
 #   SOFTWARE.
 #
 
+import datetime
+import hashlib
 import unittest
 
 from scmver import core
@@ -41,6 +43,37 @@ class CoreTestCase(unittest.TestCase):
         self.assertEqual(repr(v), '<Version({})>'.format(version.upper()))
         self.assertEqual(str(v), version.upper())
         self.assertEqual(str(v.normalize()), normalized)
+
+    def revision(self, data):
+        m = hashlib.new('sha1')
+        m.update(data)
+        return m.hexdigest()
+
+    def test_next_version(self):
+        rev = self.revision(b'scmver.core.next_version')
+
+        for tag in ('v1.0', '1.0', 'spam-1.0'):
+            for i, post in enumerate(('', '.post', '.post2', '.post3')):
+                v = core.next_version(core.SCMInfo(tag, i, rev, False, 'master'))
+                self.assertEqual(v, '1.0' + post)
+
+            for i, micro in enumerate(('', '.1', '.2', '.3')):
+                v = core.next_version(core.SCMInfo(tag, i, rev, False, 'master'),
+                                      spec='micro')
+                self.assertEqual(v, '1.0' + micro)
+
+        v = core.next_version(core.SCMInfo('1.0', 1, rev, True, 'master'),
+                              spec='minor.dev',
+                              local='{revision}.{local:%Y-%m-%d}')
+        self.assertEqual(v, '1.1.dev+{}.{:%Y-%m-%d}'.format(rev, datetime.datetime.now()))
+
+        v = core.next_version(core.SCMInfo('1.0', 1, rev, True, 'master'),
+                              spec='minor.dev',
+                              local=lambda info: '{}.{:%Y-%m-%d}'.format(info.revision, datetime.datetime.now()))
+        self.assertEqual(v, '1.1.dev+{}.{:%Y-%m-%d}'.format(rev, datetime.datetime.now()))
+
+        with self.assertRaises(core.VersionError):
+            core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
 
     def test_invalid_version(self):
         for v in ('', 'version', '1.0-', '1.0+', '1.0+_'):
