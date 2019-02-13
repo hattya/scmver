@@ -26,12 +26,13 @@
 
 import datetime
 import hashlib
-import unittest
+import os
 
 from scmver import core
+from base import SCMVerTestCase
 
 
-class CoreTestCase(unittest.TestCase):
+class CoreTestCase(SCMVerTestCase):
 
     def assertVersion(self, version, normalized):
         v = core.Version(version)
@@ -74,6 +75,17 @@ class CoreTestCase(unittest.TestCase):
 
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
+
+    def test_stat(self):
+        with self.tempdir() as path:
+            self.assertIsNone(core.stat(path))
+            kwargs = {}
+
+            os.mkdir(os.path.join(path, '.git'))
+            self.assertIsNone(core.stat(path, **kwargs))
+            kwargs['.git'] = False
+
+            self.assertIsNone(core.stat(path, **kwargs))
 
     def test_invalid_version(self):
         for v in ('', 'version', '1.0-', '1.0+', '1.0+_'):

@@ -26,10 +26,11 @@
 
 import collections
 import datetime
+import os
 import re
 
 
-__all__ = ['next_version', 'SCMInfo', 'Version', 'VersionError']
+__all__ = ['next_version', 'stat', 'SCMInfo', 'Version', 'VersionError']
 
 _pep440_re = re.compile(r"""
     \A
@@ -105,6 +106,29 @@ def next_version(info, spec='post', local='{local:%Y-%m-%d}', version=_version_r
     else:
         lv = None
     return str(pv) if not lv else '{}+{}'.format(pv, lv)
+
+
+def stat(path, **kwargs):
+    try:
+        import pkg_resources
+
+        impls = [(ep.name, ep.load()) for ep in pkg_resources.iter_entry_points(group='scmver.parse')]
+    except ImportError:
+        from . import git
+
+        impls = [('.git', git.parse)]
+
+    path = os.path.abspath(path)
+    while True:
+        for name, parse in impls:
+            if (kwargs.get(name, True)
+                and os.path.exists(os.path.join(path, name))):
+                info = parse(path, name=name, **kwargs)
+                if info:
+                    return info
+        p, path = path, os.path.dirname(path)
+        if path == p:
+            break
 
 
 SCMInfo = collections.namedtuple('SCMInfo', ('tag', 'distance', 'revision', 'dirty', 'branch'))

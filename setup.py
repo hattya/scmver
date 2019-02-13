@@ -151,4 +151,9 @@ setup(name='scmver',
           'Topic :: Utilities',
       ],
       cmdclass=cmdclass,
-      zip_safe=False)
+      zip_safe=False,
+      entry_points={
+          'scmver.parse': [
+              '.git = scmver.git:parse',
+          ],
+      })
