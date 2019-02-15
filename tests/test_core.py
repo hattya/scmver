@@ -27,6 +27,7 @@
 import datetime
 import hashlib
 import os
+import textwrap
 
 from scmver import core
 from base import SCMVerTestCase
@@ -77,6 +78,8 @@ class CoreTestCase(SCMVerTestCase):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
 
     def test_stat(self):
+        rev = self.revision(b'scmver.core.stat')
+
         with self.tempdir() as path:
             self.assertIsNone(core.stat(path))
             kwargs = {}
@@ -84,6 +87,23 @@ class CoreTestCase(SCMVerTestCase):
             os.mkdir(os.path.join(path, '.git'))
             self.assertIsNone(core.stat(path, **kwargs))
             kwargs['.git'] = False
+
+            os.mkdir(os.path.join(path, '.hg'))
+            self.assertEqual(core.stat(path, **kwargs), core.SCMInfo(branch='default'))
+            kwargs['.hg'] = False
+
+            with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
+                fp.write(textwrap.dedent("""\
+                    repo: {0}
+                    node: {0}
+                    branch: default
+                    latesttag: null
+                    latesttagdistance: 1
+                    changessincelatesttag: 1
+                """.format(rev)))
+                fp.flush()
+            self.assertEqual(core.stat(path, **kwargs), core.SCMInfo('0.0', 1, rev, False, 'default'))
+            kwargs['.hg_archival.txt'] = False
 
             self.assertIsNone(core.stat(path, **kwargs))
 

@@ -155,5 +155,7 @@ setup(name='scmver',
       entry_points={
           'scmver.parse': [
               '.git = scmver.git:parse',
+              '.hg = scmver.mercurial:parse',
+              '.hg_archival.txt = scmver.mercurial:parse',
           ],
       })
