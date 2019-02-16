@@ -74,6 +74,39 @@ class CoreTestCase(SCMVerTestCase):
                     revision = '{}'
                 """.format(rev)))
 
+    def test_load_version(self):
+        self.assertEqual(core.load_version('os:name'), os.name)
+        self.assertEqual(core.load_version('os:getcwd'), os.getcwd())
+
+        data = textwrap.dedent("""\
+            name = __name__
+            def file():
+                return __file__
+        """)
+        with self.tempdir() as path:
+            spam = os.path.join(path, 'spam.py')
+            with open(spam, 'w') as fp:
+                fp.write(data)
+                fp.flush()
+            self.assertEqual(core.load_version('spam:name', path), 'spam')
+            self.assertEqual(core.load_version('spam:file', path), spam)
+
+        with self.tempdir() as path:
+            os.mkdir(os.path.join(path, 'eggs'))
+            eggs = os.path.join(path, 'eggs', '__init__.py')
+            ham = os.path.join(path, 'eggs', 'ham.py')
+            for p in (eggs, ham):
+                with open(p, 'w') as fp:
+                    fp.write(data)
+                    fp.flush()
+            self.assertEqual(core.load_version('eggs:name', path), 'eggs')
+            self.assertEqual(core.load_version('eggs:file', path), eggs)
+            self.assertEqual(core.load_version('eggs.ham:name', path), 'eggs.ham')
+            self.assertEqual(core.load_version('eggs.ham:file', path), ham)
+
+        with self.assertRaises(ValueError):
+            core.load_version('_')
+
     def test_next_version(self):
         rev = self.revision(b'scmver.core.next_version')
 
