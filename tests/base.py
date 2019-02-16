@@ -40,6 +40,9 @@ class SCMVerTestCase(unittest.TestCase):
     def mkdtemp(self):
         return tempfile.mkdtemp(prefix='scmver-')
 
+    def mkstemp(self):
+        return tempfile.mkstemp(prefix='scmver-')
+
     @contextlib.contextmanager
     def tempdir(self):
         path = self.mkdtemp()
@@ -47,6 +50,15 @@ class SCMVerTestCase(unittest.TestCase):
             yield path
         finally:
             self.rmtree(path)
+
+    @contextlib.contextmanager
+    def tempfile(self):
+        fd, path = self.mkstemp()
+        try:
+            os.close(fd)
+            yield path
+        finally:
+            os.unlink(path)
 
     def rmtree(self, path):
         def onerror(func, path, exc_info):
