@@ -25,7 +25,6 @@
 #
 
 import datetime
-import hashlib
 import os
 import textwrap
 
@@ -45,11 +44,6 @@ class CoreTestCase(SCMVerTestCase):
         self.assertEqual(repr(v), '<Version({})>'.format(version.upper()))
         self.assertEqual(str(v), version.upper())
         self.assertEqual(str(v.normalize()), normalized)
-
-    def revision(self, data):
-        m = hashlib.new('sha1')
-        m.update(data)
-        return m.hexdigest()
 
     def test_generate(self):
         rev = self.revision(b'scmver.core.generate')

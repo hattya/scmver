@@ -33,7 +33,7 @@ import sys
 import textwrap
 
 
-__all__ = ['generate', 'load_version', 'next_version', 'stat',
+__all__ = ['generate', 'get_version', 'load_version', 'next_version', 'stat',
            'SCMInfo', 'Version', 'VersionError']
 
 _TEMPLATE = textwrap.dedent("""\
@@ -95,6 +95,9 @@ _pep440_re = re.compile(r"""
 _sep_re = re.compile(r'[-._]')
 _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
+if sys.version_info[0] > 2:
+    basestring = str
+
 
 def generate(path, version, info=None, template=_TEMPLATE):
     kwargs = {'version': version}
@@ -103,6 +106,31 @@ def generate(path, version, info=None, template=_TEMPLATE):
                       branch=info.branch)
     with open(path, 'w') as fp:
         fp.write(template.format(**kwargs))
+
+
+def get_version(root='.', **kwargs):
+    def _take(d, *keys):
+        return {k: d[k] for k in d if k in keys}
+
+    root = os.path.abspath(root)
+    info = stat(root, **{k: kwargs[k] for k in kwargs if k.endswith('.tag')})
+    if info:
+        version = next_version(info, **_take(kwargs, 'spec', 'local', 'version'))
+        if 'write_to' in kwargs:
+            generate(os.path.join(root, kwargs['write_to']), version, info, **_take(kwargs, 'template'))
+        return version
+    elif 'fallback' in kwargs:
+        fallback = kwargs['fallback']
+        if callable(fallback):
+            return fallback()
+        else:
+            if isinstance(fallback, basestring):
+                spec = fallback
+                path = None
+            else:
+                spec = fallback[0]
+                path = os.path.join(root, fallback[1])
+            return load_version(spec, path)
 
 
 def load_version(spec, path=None):

@@ -93,6 +93,9 @@ setup(name='scmver',
       cmdclass=cmdclass,
       zip_safe=False,
       entry_points={
+          'distutils.setup_keywords': [
+              'scmver = scmver.setuptools:scmver'
+          ],
           'scmver.parse': [
               '.git = scmver.git:parse',
               '.hg = scmver.mercurial:parse',
