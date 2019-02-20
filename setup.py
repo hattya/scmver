@@ -9,19 +9,6 @@ import sys
 from setuptools import setup, Command
 
 import scmver
-import scmver.git
-
-
-root = os.path.dirname(os.path.abspath(__file__))
-si = scmver.git.parse(root)
-if si:
-    version = scmver.next_version(si, spec='micro')
-    scmver.generate(os.path.join(root, 'scmver', '__version__.py'), version)
-else:
-    try:
-        version = scmver.load_version('scmver:__version__')
-    except ImportError:
-        version = None
 
 
 class test(Command):
@@ -64,7 +51,12 @@ cmdclass = {
 }
 
 setup(name='scmver',
-      version=version,
+      version=scmver.get_version(**{
+          'root': os.path.dirname(os.path.abspath(__file__)),
+          'spec': 'micro',
+          'write_to': os.path.join('scmver', '__version__.py'),
+          'fallback': 'scmver:__version__',
+      }),
       description='A package version manager based on SCM tags',
       long_description=long_description,
       author='Akinori Hattori',
