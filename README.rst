@@ -6,6 +6,15 @@ scmver is a package version manager based on SCM tags.
 It can be used to pass the version to the ``setup`` function in a ``setup.py``,
 or to generate a file which contains the version.
 
+.. image:: https://semaphoreci.com/api/v1/hattya/scmver/branches/master/badge.svg
+   :target: https://semaphoreci.com/hattya/scmver
+
+.. image:: https://ci.appveyor.com/api/projects/status/l9flwehcgr5pxi33?svg=true
+   :target: https://ci.appveyor.com/project/hattya/scmver
+
+.. image:: https://codecov.io/gh/hattya/scmver/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/hattya/scmver
+
 
 Installation
 ------------
