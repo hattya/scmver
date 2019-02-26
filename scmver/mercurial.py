@@ -52,7 +52,8 @@ def parse(root, name='.hg', **kwargs):
             pat = "'re:{}'".format(kwargs[_TAG]) if _TAG in kwargs else ''
             args = ['log', '-r', '.', '-T', "{node}\t{latesttag(" + pat + ") % '{tag}\t{changes}\t'}"]
             out = run(*args, cwd=root)[0].split('\t')
-            return core.SCMInfo(_tag_of(out[1]), int(out[2]), out[0], dirty, branch)
+            if len(out) >= 3:
+                return core.SCMInfo(_tag_of(out[1]), int(out[2]), out[0], dirty, branch)
     elif name == '.hg_archival.txt':
         p = os.path.join(root, name)
         try:

@@ -41,6 +41,9 @@ class MercurialTestCase(SCMVerTestCase):
         self._root = self.mkdtemp()
         os.chdir(self._root)
 
+        out = mercurial.run('version')[0].splitlines()[0]
+        self.version = tuple(map(int, out.split()[-1][:-1].split('.')))
+
     def tearDown(self):
         os.chdir(self._cwd)
         self.rmtree(self._root)
@@ -81,11 +84,14 @@ class MercurialTestCase(SCMVerTestCase):
         mercurial.run('commit', '-m', '.')
 
         info = mercurial.parse('.', name='.hg')
-        self.assertEqual(info.tag, '0.0')
-        self.assertEqual(info.distance, 1)
-        self.assertIsNotNone(info.revision)
-        self.assertFalse(info.dirty)
-        self.assertEqual(info.branch, 'default')
+        if self.version < (3, 6):
+            self.assertIsNone(info)
+        else:
+            self.assertEqual(info.tag, '0.0')
+            self.assertEqual(info.distance, 1)
+            self.assertIsNotNone(info.revision)
+            self.assertFalse(info.dirty)
+            self.assertEqual(info.branch, 'default')
 
         with self.archive():
             info = mercurial.parse('.', name='.hg_archival.txt')
@@ -103,11 +109,14 @@ class MercurialTestCase(SCMVerTestCase):
         mercurial.run('tag', 'v1.0')
 
         info = mercurial.parse('.', name='.hg')
-        self.assertEqual(info.tag, 'v1.0')
-        self.assertEqual(info.distance, 1)
-        self.assertIsNotNone(info.revision)
-        self.assertFalse(info.dirty)
-        self.assertEqual(info.branch, 'default')
+        if self.version < (3, 6):
+            self.assertIsNone(info)
+        else:
+            self.assertEqual(info.tag, 'v1.0')
+            self.assertEqual(info.distance, 1)
+            self.assertIsNotNone(info.revision)
+            self.assertFalse(info.dirty)
+            self.assertEqual(info.branch, 'default')
 
         with self.archive():
             info = mercurial.parse('.', name='.hg_archival.txt')
@@ -127,18 +136,24 @@ class MercurialTestCase(SCMVerTestCase):
         for pat, tag in ((r'v\d+\..*', 'v1.0'),
                          (r'spam-\d+\..*', 'spam-1.0')):
             info = mercurial.parse('.', name='.hg', **{'mercurial.tag': pat})
-            self.assertEqual(info.tag, tag)
-            self.assertEqual(info.distance, 1)
+            if self.version < (3, 6):
+                self.assertIsNone(info)
+            else:
+                self.assertEqual(info.tag, tag)
+                self.assertEqual(info.distance, 1)
+                self.assertIsNotNone(info.revision)
+                self.assertFalse(info.dirty)
+                self.assertEqual(info.branch, 'default')
+
+        info = mercurial.parse('.', name='.hg', **{'mercurial.tag': r'__scmver__'})
+        if self.version < (3, 6):
+            self.assertIsNone(info)
+        else:
+            self.assertEqual(info.tag, '0.0')
+            self.assertEqual(info.distance, 2)
             self.assertIsNotNone(info.revision)
             self.assertFalse(info.dirty)
             self.assertEqual(info.branch, 'default')
-
-        info = mercurial.parse('.', name='.hg', **{'mercurial.tag': r'__scmver__'})
-        self.assertEqual(info.tag, '0.0')
-        self.assertEqual(info.distance, 2)
-        self.assertIsNotNone(info.revision)
-        self.assertFalse(info.dirty)
-        self.assertEqual(info.branch, 'default')
 
         with self.archive():
             for pat, tag in ((r'v\d+\..*', 'v1.0'),
