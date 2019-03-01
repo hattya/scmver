@@ -83,7 +83,6 @@ setup(name='scmver',
           'Topic :: Utilities',
       ],
       cmdclass=cmdclass,
-      zip_safe=False,
       entry_points={
           'distutils.setup_keywords': [
               'scmver = scmver.setuptools:scmver'
