@@ -72,6 +72,7 @@ distutils
 
 See Configuration_ for the ``scmver.get_version`` arguments.
 
+
 Configuration
 -------------
 

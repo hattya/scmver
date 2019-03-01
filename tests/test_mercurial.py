@@ -133,8 +133,10 @@ class MercurialTestCase(SCMVerTestCase):
         mercurial.run('commit', '-m', '.')
         mercurial.run('tag', 'v1.0', 'spam-1.0')
 
-        for pat, tag in ((r'v\d+\..*', 'v1.0'),
-                         (r'spam-\d+\..*', 'spam-1.0')):
+        for pat, tag in (
+            (r'v\d+\..+', 'v1.0'),
+            (r'spam-\d+\..+', 'spam-1.0'),
+        ):
             info = mercurial.parse('.', name='.hg', **{'mercurial.tag': pat})
             if self.version < (3, 6):
                 self.assertIsNone(info)
@@ -156,8 +158,10 @@ class MercurialTestCase(SCMVerTestCase):
             self.assertEqual(info.branch, 'default')
 
         with self.archive():
-            for pat, tag in ((r'v\d+\..*', 'v1.0'),
-                             (r'spam-\d+\..*', 'spam-1.0')):
+            for pat, tag in (
+                (r'v\d+\..+', 'v1.0'),
+                (r'spam-\d+\..+', 'spam-1.0'),
+            ):
                 info = mercurial.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
                 self.assertEqual(info.tag, tag)
                 self.assertEqual(info.distance, 1)

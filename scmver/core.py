@@ -178,7 +178,7 @@ def stat(path, **kwargs):
     try:
         import pkg_resources
 
-        impls = [(ep.name, ep.load()) for ep in pkg_resources.iter_entry_points(group='scmver.parse')]
+        impls = [(ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('scmver.parse')]
     except ImportError:
         from . import git, mercurial
 

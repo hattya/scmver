@@ -42,6 +42,10 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
         self._rev = self.revision(b'scmver.setuptools')
 
+    def tearDown(self):
+        os.chdir(self._cwd)
+        self.rmtree(self._root)
+
     def init(self, tag='v1.0'):
         with open(os.path.join(self._root, '.hg_archival.txt'), 'w') as fp:
             fp.write(textwrap.dedent("""\
@@ -59,10 +63,6 @@ class SetuptoolsTestCase(SCMVerTestCase):
         setuptools.scmver(dist, 'scmver', value)
         return dist.metadata.version
 
-    def tearDown(self):
-        os.chdir(self._cwd)
-        self.rmtree(self._root)
-
     def test_scmver_with_boolean(self):
         self.init()
         self.assertIsNone(self.scmver(False))
@@ -74,7 +74,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
     def test_scmver_scm_tag(self):
         self.init()
 
-        value = {'mercurial.tag': r'v\d+\..*'}
+        value = {'mercurial.tag': r'v\d+\..+'}
         self.assertEqual(self.scmver(value), '1.0')
 
         with self.assertRaises(ValueError):

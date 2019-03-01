@@ -93,8 +93,10 @@ class GitTestCase(SCMVerTestCase):
         git.run('tag', 'v1.0')
         git.run('tag', 'spam-1.0')
 
-        for pat, tag in ((r'v*.*', 'v1.0'),
-                         (r'spam-*.*', 'spam-1.0')):
+        for pat, tag in (
+            ('v*.*', 'v1.0'),
+            ('spam-*.*', 'spam-1.0'),
+        ):
             info = git.parse('.', name='.git', **{'git.tag': pat})
             self.assertEqual(info.tag, tag)
             self.assertEqual(info.distance, 0)
