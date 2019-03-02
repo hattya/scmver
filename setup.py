@@ -91,5 +91,6 @@ setup(name='scmver',
               '.git = scmver.git:parse',
               '.hg = scmver.mercurial:parse',
               '.hg_archival.txt = scmver.mercurial:parse',
+              '.svn = scmver.subversion:parse',
           ],
       })

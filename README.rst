@@ -167,6 +167,24 @@ git.tag
 mercurial.tag
   A regular expression pattern to filter tags.
 
+subversion.tag
+  A regular expression pattern to filter tags.
+
+subversion.trunk
+  A relative repository path of the trunk directory.
+
+  Default: ``'trunk'``
+
+subversion.branches
+  A relative repository path of the directory where branches are located.
+
+  Default: ``'branches'``
+
+subversion.tags
+  A relative repository path of the directory where tags are located.
+
+  Default: ``'tags'``
+
 
 License
 -------

@@ -155,6 +155,10 @@ class CoreTestCase(SCMVerTestCase):
             self.assertEqual(core.stat(path, **kwargs), core.SCMInfo('0.0', 1, rev, False, 'default'))
             kwargs['.hg_archival.txt'] = False
 
+            os.mkdir(os.path.join(path, '.svn'))
+            self.assertIsNone(core.stat(path, **kwargs))
+            kwargs['.svn'] = False
+
             self.assertIsNone(core.stat(path, **kwargs))
 
     def test_invalid_version(self):

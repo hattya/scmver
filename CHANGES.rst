@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 0.2
+-----------
+
+* Add support for Subversion.
+
+
 Version 0.1
 -----------
 
