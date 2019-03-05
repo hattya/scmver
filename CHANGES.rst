@@ -5,6 +5,7 @@ Version 0.2
 -----------
 
 * Add support for Subversion.
+* Do not abbreviate revisions of Git.
 
 
 Version 0.1

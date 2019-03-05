@@ -34,7 +34,7 @@ _TAG = 'git.tag'
 
 def parse(root, name='.git', **kwargs):
     if name == '.git':
-        args = ['describe', '--dirty=+', '--tags', '--long', '--always']
+        args = ['describe', '--dirty=+', '--tags', '--abbrev=40', '--long', '--always']
         if _TAG in kwargs:
             args += ('--match', kwargs[_TAG])
         out = run(*args, cwd=root)[0].strip().rsplit('-', 2)
