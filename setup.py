@@ -83,7 +83,13 @@ setup(name='scmver',
           'Topic :: Utilities',
       ],
       cmdclass=cmdclass,
+      extras_require={
+          'cli': ['click'],
+      },
       entry_points={
+          'console_scripts': [
+              'scmver = scmver.cli:run [cli]',
+          ],
           'distutils.setup_keywords': [
               'scmver = scmver.setuptools:scmver'
           ],

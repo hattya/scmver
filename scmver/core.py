@@ -32,6 +32,8 @@ import re
 import sys
 import textwrap
 
+from . import _compat as five
+
 
 __all__ = ['generate', 'get_version', 'load_version', 'next_version', 'stat',
            'SCMInfo', 'Version', 'VersionError']
@@ -95,9 +97,6 @@ _pep440_re = re.compile(r"""
 _sep_re = re.compile(r'[-._]')
 _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
-if sys.version_info[0] > 2:
-    basestring = str
-
 
 def generate(path, version, info=None, template=_TEMPLATE):
     kwargs = {'version': version}
@@ -124,7 +123,7 @@ def get_version(root='.', **kwargs):
         if callable(fallback):
             return fallback()
         else:
-            if isinstance(fallback, basestring):
+            if isinstance(fallback, five.basestring):
                 spec = fallback
                 path = None
             else:

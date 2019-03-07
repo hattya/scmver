@@ -6,6 +6,7 @@ Version 0.2
 
 * Add support for Subversion.
 * Do not abbreviate revisions of Git.
+* Add scmver script.
 
 
 Version 0.1
