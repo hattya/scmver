@@ -26,6 +26,7 @@
 
 import io
 import sys
+import textwrap
 import unittest
 
 try:
@@ -33,13 +34,24 @@ try:
     import click.testing
 
     from scmver import _compat as five
-    from scmver import __version__, cli
+    from scmver import __version__, cli, core
 except ImportError:
     click = None
+from base import SCMVerTestCase
 
 
 @unittest.skipUnless(click, 'requires click')
-class CLITestCase(unittest.TestCase):
+class CLITestCase(SCMVerTestCase):
+
+    def setUp(self):
+        self._stat = core.stat
+
+    def tearDown(self):
+        core.stat = self._stat
+
+    def invoke(self, args):
+        runner = click.testing.CliRunner()
+        return runner.invoke(cli.cli, args)
 
     def test_run(self):
         out = io.BytesIO()
@@ -55,6 +67,56 @@ class CLITestCase(unittest.TestCase):
         finally:
             sys.stdout = stdout
         self.assertEqual(out.getvalue().decode('utf-8').strip(), 'scmver, version {}'.format(__version__))
+
+    def test_stat_without_repository(self):
+        core.stat = lambda *a, **kw: None
+
+        rv = self.invoke(['stat'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, '')
+
+    def test_stat_with_defaults(self):
+        rev = self.revision(b'scmver.cli.stat')
+
+        core.stat = lambda *a, **kw: core.SCMInfo(branch='HEAD')
+        rv = self.invoke(['stat'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, textwrap.dedent("""\
+            Distance: 0
+            Dirty:    False
+            Branch:   HEAD
+        """.format(rev)))
+
+        core.stat = lambda *a, **kw: core.SCMInfo('0.0', 1, rev, False, 'master')
+        rv = self.invoke(['stat'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, textwrap.dedent("""\
+            Distance: 1
+            Revision: {}
+            Dirty:    False
+            Branch:   master
+        """.format(rev)))
+
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+        rv = self.invoke(['stat'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, textwrap.dedent("""\
+            Tag:      v1.0
+            Distance: 0
+            Revision: {}
+            Dirty:    True
+            Branch:   master
+        """.format(rev)))
+
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev)
+        rv = self.invoke(['stat'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, textwrap.dedent("""\
+            Tag:      v1.0
+            Distance: 0
+            Revision: {}
+            Dirty:    False
+        """.format(rev)))
 
 
 @unittest.skipUnless(click, 'requires click')
