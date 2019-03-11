@@ -279,7 +279,7 @@ class CoreTestCase(SCMVerTestCase):
         self.assertVersion('1.0+00100', '1.0+100')
         self.assertVersion('1.0+2019-02-10', '1.0+2019.2.10')
 
-    def test_update(self):
+    def test_update_version(self):
         v = core.Version('1.0')
         v.update('')
         self.assertEqual(str(v), '1.0')

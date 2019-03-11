@@ -78,5 +78,4 @@ class SCMVerTestCase(unittest.TestCase):
                 func(path)
             else:
                 raise
-
         shutil.rmtree(path, onerror=onerror)

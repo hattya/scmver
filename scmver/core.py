@@ -108,15 +108,15 @@ def generate(path, version, info=None, template=_TEMPLATE):
 
 
 def get_version(root='.', **kwargs):
-    def _take(d, *keys):
+    def take(d, *keys):
         return {k: d[k] for k in d if k in keys}
 
     root = os.path.abspath(root)
     info = stat(root, **{k: kwargs[k] for k in kwargs if k.endswith('.tag')})
     if info:
-        version = next_version(info, **_take(kwargs, 'spec', 'local', 'version'))
+        version = next_version(info, **take(kwargs, 'spec', 'local', 'version'))
         if 'write_to' in kwargs:
-            generate(os.path.join(root, kwargs['write_to']), version, info, **_take(kwargs, 'template'))
+            generate(os.path.join(root, kwargs['write_to']), version, info, **take(kwargs, 'template'))
         return version
     elif 'fallback' in kwargs:
         fallback = kwargs['fallback']
