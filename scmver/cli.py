@@ -24,6 +24,8 @@
 #   SOFTWARE.
 #
 
+import re
+
 import click
 
 from . import _compat as five
@@ -49,6 +51,47 @@ class _Group(click.Group):
             return cmd
 
 
+class _Local(click.ParamType):
+
+    name = 'text'
+    CO_VARARGS = 0x0004
+
+    def convert(self, value, param, ctx):
+        try:
+            m = {}
+            exec(value, {}, m)
+        except (NameError, SyntaxError):
+            return value
+        else:
+            for v in five.values(m):
+                if callable(v):
+                    if (v.__code__.co_argcount < 1
+                        and not v.__code__.co_flags & self.CO_VARARGS):
+                        self.fail('"{}" does not have arguments.'.format(v), param, ctx)
+                    return v
+            else:
+                self.fail('Callable object does not found.', param, ctx)
+
+
+class _Regex(click.ParamType):
+
+    name = 'regex'
+
+    def __init__(self, group=None):
+        super(_Regex, self).__init__()
+        self.group = group or []
+
+    def convert(self, value, param, ctx):
+        try:
+            value = re.compile(value)
+        except re.error as e:
+            self.fail(str(e), param, ctx)
+        for g in self.group:
+            if g not in value.groupindex:
+                self.fail('Regex does not have the {} group.'.format(g), param, ctx)
+        return value
+
+
 def _options(options):
     def _options(func):
         for option in reversed(options):
@@ -57,6 +100,16 @@ def _options(options):
     return _options
 
 
+_next_version_options = (
+    click.option('-s', '--spec',
+                 help='Construct public version identifiers.'),
+    click.option('-l', '--local',
+                 type=_Local(),
+                 help='Construct local version identifiers.'),
+    click.option('-v', '--version',
+                 type=_Regex(group=['version']),
+                 help='Regular expression to extract the version.'),
+)
 _stat_options = (
     click.option('--git-tag',
                  metavar='GLOB',
@@ -86,6 +139,29 @@ def cli():
 
 
 @cli.command()
+@click.argument('file',
+                type=click.Path(dir_okay=False, writable=True),
+                required=True,
+                nargs=1)
+@_options(_next_version_options)
+@click.option('-t', '--template',
+              help='File template.')
+@_options(_stat_options)
+def generate(file, template, **opts):
+    """Generate a file with the version."""
+
+    info = _stat('.', **opts)
+    if not info:
+        return
+    version = _next_version(info, **opts)
+
+    kwargs = {}
+    if template is not None:
+        kwargs['template'] = template.replace('\\r\\n', '\n').replace('\\n', '\n')
+    core.generate(file, version, info, **kwargs)
+
+
+@cli.command()
 @_options(_stat_options)
 def stat(**opts):
     """Show the working directory status."""
@@ -102,6 +178,13 @@ def stat(**opts):
     click.echo('Dirty:    {.dirty}'.format(info))
     if info.branch:
         click.echo('Branch:   {.branch}'.format(info))
+
+
+def _next_version(info, **opts):
+    kwargs = {k: opts[k]
+              for k in ('spec', 'local', 'version')
+              if opts[k] is not None}
+    return core.next_version(info, **kwargs)
 
 
 def _stat(path, **opts):

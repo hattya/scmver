@@ -24,7 +24,9 @@
 #   SOFTWARE.
 #
 
+import datetime
 import io
+import os
 import sys
 import textwrap
 import unittest
@@ -67,6 +69,106 @@ class CLITestCase(SCMVerTestCase):
         finally:
             sys.stdout = stdout
         self.assertEqual(out.getvalue().decode('utf-8').strip(), 'scmver, version {}'.format(__version__))
+
+    def test_generate_without_repository(self):
+        core.stat = lambda *a, **kw: None
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', path])
+            self.assertEqual(rv.exit_code, 0)
+            self.assertEqual(os.stat(path).st_size, 0)
+
+    def test_generate_with_defaults(self):
+        rev = self.revision(b'scmver.cli.generate')
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, False, 'master')
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0'")
+
+    def test_generate_with_spec(self):
+        rev = self.revision(b'scmver.cli.generate')
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, False, 'master')
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-s', 'minor.dev', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.1.dev'")
+
+    def test_generate_with_local(self):
+        rev = self.revision(b'scmver.cli.generate')
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-l', '{local:%Y%m%d}', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0+{:%Y%m%d}'".format(datetime.datetime.now()))
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-l', 'dirty', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0+dirty'")
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-l', 'def local(info): import time; return time.strftime("%Y%m%d")', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0+{:%Y%m%d}'".format(datetime.datetime.now()))
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-l', 'def local(): return', path])
+            self.assertEqual(rv.exit_code, 2)
+            self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ "<function local at 0x\w+>" does not have arguments\.$')
+            self.assertEqual(os.stat(path).st_size, 0)
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-l', 'local = "dirty"', path])
+            self.assertEqual(rv.exit_code, 2)
+            self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ Callable object does not found\.$')
+            self.assertEqual(os.stat(path).st_size, 0)
+
+    def test_generate_with_version(self):
+        rev = self.revision(b'scmver.cli.generate')
+        core.stat = lambda *a, **kw: core.SCMInfo('spam-1.0', 0, rev, False, 'master')
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-v', r'spam-(?P<version>\d+\..+)', path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0'")
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-v', r'spam-([9-0]+\..+)', path])
+            self.assertEqual(rv.exit_code, 2)
+            self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ bad character range(?: 9-0 at position 7)?$')
+            self.assertEqual(os.stat(path).st_size, 0)
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-v', r'spam-(\d+\..+)', path])
+            self.assertEqual(rv.exit_code, 2)
+            self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ Regex does not have the version group\.$')
+            self.assertEqual(os.stat(path).st_size, 0)
+
+    def test_generate_with_template(self):
+        rev = self.revision(b'scmver.cli.generate')
+        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, False, 'master')
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-t', "__version__ = '{version}'\\n", path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read(), "__version__ = '1.0'\n")
+
+        with self.tempfile() as path:
+            rv = self.invoke(['generate', '-t', "__version__ = '{version}'\\r\\n", path])
+            self.assertEqual(rv.exit_code, 0)
+            with open(path) as fp:
+                self.assertEqual(fp.read(), "__version__ = '1.0'\n")
 
     def test_stat_without_repository(self):
         core.stat = lambda *a, **kw: None

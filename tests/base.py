@@ -32,11 +32,16 @@ import stat
 import tempfile
 import unittest
 
+from scmver import _compat as five
+
 
 __all__ = ['SCMVerTestCase']
 
 
 class SCMVerTestCase(unittest.TestCase):
+
+    if five.PY2:
+        assertRegex = unittest.TestCase.assertRegexpMatches
 
     def mkdtemp(self):
         return tempfile.mkdtemp(prefix='scmver-')
