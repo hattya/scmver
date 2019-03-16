@@ -38,6 +38,8 @@ _TAG = 'subversion.tag'
 _TRUNK = 'subversion.trunk'
 _BRANCHES = 'subversion.branches'
 _TAGS = 'subversion.tags'
+# status
+_MODIFIED = frozenset(('added', 'conflicted', 'deleted', 'incomplete', 'missing', 'modified', 'obstructed', 'replaced'))
 
 
 def parse(root, name='.svn', **kwargs):
@@ -47,8 +49,16 @@ def parse(root, name='.svn', **kwargs):
             return
 
         revision = int(info.get('Revision', 0))
-        dirty = bool(run('status', cwd=root)[0])
         branch = _branch_of(info, **kwargs)
+
+        out = run('status', '--xml', cwd=root)[0]
+        for e in ET.fromstring(out).iterfind('.//wc-status'):
+            if (e.get('item') in _MODIFIED
+                or e.get('props') in _MODIFIED):
+                dirty = True
+                break
+        else:
+            dirty = False
 
         tags = _rel(_TAGS, 'tags', **kwargs)
         url = info['Repository Root'] + tags

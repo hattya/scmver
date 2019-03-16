@@ -124,3 +124,17 @@ class SubversionTestCase(SCMVerTestCase):
             ):
                 self.switch(path)
                 self.assertEqual(subversion.parse(path, name='.svn', **kwargs), core.SCMInfo(tag, 0, 3, False, branch))
+
+    def test_dirty(self):
+        self.create('repo')
+        self.checkout('repo', 'wc')
+        subversion.run('mkdir', 'trunk', 'branches', 'tags')
+        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(revision=0, dirty=True))
+
+        subversion.run('commit', '-m', '_')
+        subversion.run('update')
+        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
+
+        with open('file', 'w'):
+            pass
+        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
