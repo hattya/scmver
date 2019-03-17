@@ -162,6 +162,19 @@ def generate(file, template, **opts):
 
 
 @cli.command()
+@click.argument('spec')
+@click.option('-p', '--path',
+              help='Search path for modules.')
+def load(spec, path):
+    """Show a value of the specified object.
+
+    SPEC is in the "package.module:some.attribute" format.
+    """
+
+    click.echo(core.load_version(spec, path))
+
+
+@cli.command()
 @_options(_next_version_options)
 @_options(_stat_options)
 def next(**opts):

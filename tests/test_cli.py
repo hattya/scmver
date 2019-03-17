@@ -125,6 +125,15 @@ class CLITestCase(SCMVerTestCase):
             with open(path) as fp:
                 self.assertEqual(fp.read(), "__version__ = '1.0'\n")
 
+    def test_load(self):
+        rv = self.invoke(['load', 'os:name'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, '{}\n'.format(os.name))
+
+        rv = self.invoke(['load', 'os:getcwd'])
+        self.assertEqual(rv.exit_code, 0)
+        self.assertEqual(rv.output, '{}\n'.format(os.getcwd()))
+
     def test_next_without_repository(self):
         core.stat = lambda *a, **kw: None
 
