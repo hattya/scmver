@@ -162,6 +162,19 @@ def generate(file, template, **opts):
 
 
 @cli.command()
+@_options(_next_version_options)
+@_options(_stat_options)
+def next(**opts):
+    """Calculate a next version from the version."""
+
+    info = _stat('.', **opts)
+    if not info:
+        return
+
+    click.echo(_next_version(info, **opts))
+
+
+@cli.command()
 @_options(_stat_options)
 def stat(**opts):
     """Show the working directory status."""
