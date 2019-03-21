@@ -4,6 +4,8 @@ scmver Changelog
 Version 0.2
 -----------
 
+Release date: 2019-03-21
+
 * Add support for Subversion.
 * Do not abbreviate revisions of Git.
 * Add scmver script.
