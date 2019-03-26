@@ -179,9 +179,10 @@ def stat(path, **kwargs):
 
         impls = [(ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('scmver.parse')]
     except ImportError:
-        from . import git, mercurial, subversion
+        from . import bazaar, git, mercurial, subversion
 
-        impls = [('.git', git.parse), ('.hg', mercurial.parse), ('.hg_archival.txt', mercurial.parse), ('.svn', subversion.parse)]
+        impls = [('.bzr', bazaar.parse), ('.git', git.parse), ('.hg', mercurial.parse), ('.hg_archival.txt', mercurial.parse),
+                 ('.svn', subversion.parse)]
 
     path = os.path.abspath(path)
     while True:

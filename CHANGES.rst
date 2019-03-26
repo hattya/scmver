@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 0.3
+-----------
+
+* Add support for Bazaar.
+
+
 Version 0.2
 -----------
 

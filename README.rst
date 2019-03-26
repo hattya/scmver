@@ -161,6 +161,9 @@ fallback
   ``callable object``
     It should return the version.
 
+bazaar.tag
+  A regular expression pattern to filter tags.
+
 git.tag
   It will be passed to ``git describe`` as ``--match``.
 

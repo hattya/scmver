@@ -94,6 +94,7 @@ setup(name='scmver',
               'scmver = scmver.setuptools:scmver'
           ],
           'scmver.parse': [
+              '.bzr = scmver.bazaar:parse',
               '.git = scmver.git:parse',
               '.hg = scmver.mercurial:parse',
               '.hg_archival.txt = scmver.mercurial:parse',
