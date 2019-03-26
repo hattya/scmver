@@ -33,12 +33,13 @@ from . import core, util
 __all__ = ['parse', 'run']
 
 _TAG = 'mercurial.tag'
+# environ
 _ENV = {'HGRCPATH': ''}
 
 
 def parse(root, name='.hg', **kwargs):
     if name == '.hg':
-        out = run('id', '-ib', cwd=root)[0].strip().split()
+        out = run('identify', '-ib', cwd=root)[0].strip().split()
         if len(out) == 2:
             try:
                 null = int(out[0][:-1]) == 0

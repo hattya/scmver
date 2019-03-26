@@ -56,10 +56,11 @@ class GitTestCase(SCMVerTestCase):
         for name in ('_', '.git'):
             self.assertIsNone(git.parse('.', name=name))
 
-    def test_no_tags(self):
         self.init()
         self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='HEAD'))
 
+    def test_no_tags(self):
+        self.init()
         self.touch('file')
         git.run('add', '.')
         git.run('commit', '-m', '.')

@@ -29,7 +29,7 @@ import os
 import textwrap
 import unittest
 
-from scmver import core, mercurial, util
+from scmver import core, mercurial as hg, util
 from base import SCMVerTestCase
 
 
@@ -41,7 +41,7 @@ class MercurialTestCase(SCMVerTestCase):
         self._root = self.mkdtemp()
         os.chdir(self._root)
 
-        out = mercurial.run('version')[0].splitlines()[0]
+        out = hg.run('version')[0].splitlines()[0]
         self.version = tuple(map(int, out.split()[-1][:-1].split('.')))
 
     def tearDown(self):
@@ -49,7 +49,7 @@ class MercurialTestCase(SCMVerTestCase):
         self.rmtree(self._root)
 
     def init(self):
-        mercurial.run('init')
+        hg.run('init')
         with open(os.path.join('.hg', 'hgrc'), 'w') as fp:
             fp.write(textwrap.dedent("""\
                 [ui]
@@ -60,7 +60,7 @@ class MercurialTestCase(SCMVerTestCase):
     @contextlib.contextmanager
     def archive(self):
         with self.tempdir() as path:
-            mercurial.run('archive', path)
+            hg.run('archive', path)
             os.chdir(path)
             try:
                 yield path
@@ -73,17 +73,18 @@ class MercurialTestCase(SCMVerTestCase):
 
     def test_empty(self):
         for name in ('_', '.hg', '.hg_archival.txt'):
-            self.assertIsNone(mercurial.parse('.', name=name))
+            self.assertIsNone(hg.parse('.', name=name))
+
+        self.init()
+        self.assertEqual(hg.parse('.', name='.hg'), core.SCMInfo(branch='default'))
 
     def test_no_tags(self):
         self.init()
-        self.assertEqual(mercurial.parse('.', name='.hg'), core.SCMInfo(branch='default'))
-
         self.touch('file')
-        mercurial.run('add', '.')
-        mercurial.run('commit', '-m', '.')
+        hg.run('add', '.')
+        hg.run('commit', '-m', '.')
 
-        info = mercurial.parse('.', name='.hg')
+        info = hg.parse('.', name='.hg')
         if self.version < (3, 6):
             self.assertIsNone(info)
         else:
@@ -94,7 +95,7 @@ class MercurialTestCase(SCMVerTestCase):
             self.assertEqual(info.branch, 'default')
 
         with self.archive():
-            info = mercurial.parse('.', name='.hg_archival.txt')
+            info = hg.parse('.', name='.hg_archival.txt')
             self.assertEqual(info.tag, '0.0')
             self.assertEqual(info.distance, 1)
             self.assertIsNotNone(info.revision)
@@ -104,11 +105,11 @@ class MercurialTestCase(SCMVerTestCase):
     def test_simple(self):
         self.init()
         self.touch('file')
-        mercurial.run('add', '.')
-        mercurial.run('commit', '-m', '.')
-        mercurial.run('tag', 'v1.0')
+        hg.run('add', '.')
+        hg.run('commit', '-m', '.')
+        hg.run('tag', 'v1.0')
 
-        info = mercurial.parse('.', name='.hg')
+        info = hg.parse('.', name='.hg')
         if self.version < (3, 6):
             self.assertIsNone(info)
         else:
@@ -119,7 +120,7 @@ class MercurialTestCase(SCMVerTestCase):
             self.assertEqual(info.branch, 'default')
 
         with self.archive():
-            info = mercurial.parse('.', name='.hg_archival.txt')
+            info = hg.parse('.', name='.hg_archival.txt')
             self.assertEqual(info.tag, 'v1.0')
             self.assertEqual(info.distance, 1)
             self.assertIsNotNone(info.revision)
@@ -129,15 +130,15 @@ class MercurialTestCase(SCMVerTestCase):
     def test_match(self):
         self.init()
         self.touch('file')
-        mercurial.run('add', '.')
-        mercurial.run('commit', '-m', '.')
-        mercurial.run('tag', 'v1.0', 'spam-1.0')
+        hg.run('add', '.')
+        hg.run('commit', '-m', '.')
+        hg.run('tag', 'v1.0', 'spam-1.0')
 
         for pat, tag in (
             (r'v\d+\..+', 'v1.0'),
             (r'spam-\d+\..+', 'spam-1.0'),
         ):
-            info = mercurial.parse('.', name='.hg', **{'mercurial.tag': pat})
+            info = hg.parse('.', name='.hg', **{'mercurial.tag': pat})
             if self.version < (3, 6):
                 self.assertIsNone(info)
             else:
@@ -147,7 +148,7 @@ class MercurialTestCase(SCMVerTestCase):
                 self.assertFalse(info.dirty)
                 self.assertEqual(info.branch, 'default')
 
-        info = mercurial.parse('.', name='.hg', **{'mercurial.tag': r'__scmver__'})
+        info = hg.parse('.', name='.hg', **{'mercurial.tag': r'__scmver__'})
         if self.version < (3, 6):
             self.assertIsNone(info)
         else:
@@ -162,7 +163,7 @@ class MercurialTestCase(SCMVerTestCase):
                 (r'v\d+\..+', 'v1.0'),
                 (r'spam-\d+\..+', 'spam-1.0'),
             ):
-                info = mercurial.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
+                info = hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
                 self.assertEqual(info.tag, tag)
                 self.assertEqual(info.distance, 1)
                 self.assertIsNotNone(info.revision)
@@ -170,4 +171,4 @@ class MercurialTestCase(SCMVerTestCase):
                 self.assertEqual(info.branch, 'default')
 
             with self.assertRaises(ValueError):
-                mercurial.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})
+                hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})

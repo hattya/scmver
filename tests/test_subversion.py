@@ -27,7 +27,7 @@
 import os
 import unittest
 
-from scmver import core, subversion, util
+from scmver import core, subversion as svn, util
 from base import SCMVerTestCase
 
 
@@ -49,23 +49,23 @@ class SubversionTestCase(SCMVerTestCase):
     def checkout(self, repo, wc):
         repo = os.path.join(self._root, repo)
         wc = os.path.join(self._root, wc)
-        subversion.run('checkout', 'file:///{}'.format(repo.replace(os.sep, '/')), wc)
+        svn.run('checkout', 'file:///{}'.format(repo.replace(os.sep, '/')), wc)
         os.chdir(wc)
 
     def switch(self, path):
-        subversion.run('switch', '^' + os.path.normpath(os.path.join(os.sep, path)).replace(os.sep, '/'))
+        svn.run('switch', '^' + os.path.normpath(os.path.join(os.sep, path)).replace(os.sep, '/'))
 
     def test_empty(self):
         for name in ('_', '.svn'):
-            self.assertIsNone(subversion.parse('.', name=name))
+            self.assertIsNone(svn.parse('.', name=name))
 
     def test_no_tags(self):
         self.create('repo')
         self.checkout('repo', 'wc')
-        subversion.run('mkdir', 'trunk', 'branches', 'tags')
-        subversion.run('commit', '-m', '_')
-        subversion.run('copy', 'trunk', os.path.join('branches', '1.x'))
-        subversion.run('commit', '-m', '_')
+        svn.run('mkdir', 'trunk', 'branches', 'tags')
+        svn.run('commit', '-m', '_')
+        svn.run('copy', 'trunk', os.path.join('branches', '1.x'))
+        svn.run('commit', '-m', '_')
 
         for path, distance, branch in (
             ('.', 2, None),
@@ -75,17 +75,17 @@ class SubversionTestCase(SCMVerTestCase):
             ('tags', 1, None),
         ):
             self.switch(path)
-            self.assertEqual(subversion.parse(path, name='.svn'), core.SCMInfo(distance=distance, revision=2, branch=branch))
+            self.assertEqual(svn.parse(path, name='.svn'), core.SCMInfo(distance=distance, revision=2, branch=branch))
 
     def test_simple(self):
         self.create('repo')
         self.checkout('repo', 'wc')
-        subversion.run('mkdir', 'trunk', 'branches', 'tags')
-        subversion.run('commit', '-m', '_')
-        subversion.run('copy', 'trunk', os.path.join('branches', '1.x'))
-        subversion.run('commit', '-m', '_')
-        subversion.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', '1.0'))
-        subversion.run('commit', '-m', '_')
+        svn.run('mkdir', 'trunk', 'branches', 'tags')
+        svn.run('commit', '-m', '_')
+        svn.run('copy', 'trunk', os.path.join('branches', '1.x'))
+        svn.run('commit', '-m', '_')
+        svn.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', '1.0'))
+        svn.run('commit', '-m', '_')
 
         for path, branch in (
             ('.', None),
@@ -96,18 +96,18 @@ class SubversionTestCase(SCMVerTestCase):
             (os.path.join('tags', '1.0'), None),
         ):
             self.switch(path)
-            self.assertEqual(subversion.parse(path, name='.svn'), core.SCMInfo('1.0', 0, 3, False, branch))
+            self.assertEqual(svn.parse(path, name='.svn'), core.SCMInfo('1.0', 0, 3, False, branch))
 
     def test_match(self):
         self.create('repo')
         self.checkout('repo', 'wc')
-        subversion.run('mkdir', 'trunk', 'branches', 'tags')
-        subversion.run('commit', '-m', '_')
-        subversion.run('copy', 'trunk', os.path.join('branches', '1.x'))
-        subversion.run('commit', '-m', '_')
-        subversion.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', '1.0'))
-        subversion.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', 'spam-1.0'))
-        subversion.run('commit', '-m', '_')
+        svn.run('mkdir', 'trunk', 'branches', 'tags')
+        svn.run('commit', '-m', '_')
+        svn.run('copy', 'trunk', os.path.join('branches', '1.x'))
+        svn.run('commit', '-m', '_')
+        svn.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', '1.0'))
+        svn.run('copy', os.path.join('branches', '1.x'), os.path.join('tags', 'spam-1.0'))
+        svn.run('commit', '-m', '_')
 
         for pat, tag in (
             (r'\d\..+', '1.0'),
@@ -123,18 +123,18 @@ class SubversionTestCase(SCMVerTestCase):
                 (os.path.join('tags', '1.0'), None),
             ):
                 self.switch(path)
-                self.assertEqual(subversion.parse(path, name='.svn', **kwargs), core.SCMInfo(tag, 0, 3, False, branch))
+                self.assertEqual(svn.parse(path, name='.svn', **kwargs), core.SCMInfo(tag, 0, 3, False, branch))
 
-    def test_dirty(self):
+    def test_status(self):
         self.create('repo')
         self.checkout('repo', 'wc')
-        subversion.run('mkdir', 'trunk', 'branches', 'tags')
-        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(revision=0, dirty=True))
+        svn.run('mkdir', 'trunk', 'branches', 'tags')
+        self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(revision=0, dirty=True))
 
-        subversion.run('commit', '-m', '_')
-        subversion.run('update')
-        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
+        svn.run('commit', '-m', '_')
+        svn.run('update')
+        self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
 
         with open('file', 'w'):
             pass
-        self.assertEqual(subversion.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
+        self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
