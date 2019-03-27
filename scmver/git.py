@@ -51,7 +51,8 @@ def parse(root, name='.git', **kwargs):
                                 dirty=out[0].endswith('+'),
                                 branch=branch)
         elif branch:
-            return core.SCMInfo(branch=branch)
+            return core.SCMInfo(dirty=any(l for l in run('status', '--porcelain', cwd=root)[0].splitlines() if l[0] != '?'),
+                                branch=branch)
 
 
 def run(*args, **kwargs):

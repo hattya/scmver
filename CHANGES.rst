@@ -6,6 +6,7 @@ Version 0.3
 
 * Add support for Bazaar.
 * Improve branch detection of Git.
+* Improve change detection of Git.
 
 
 Version 0.2
