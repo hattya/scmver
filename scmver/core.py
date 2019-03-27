@@ -178,6 +178,8 @@ def stat(path, **kwargs):
         import pkg_resources
 
         impls = [(ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('scmver.parse')]
+        if not impls:
+            raise ImportError
     except ImportError:
         from . import bazaar, git, mercurial, subversion
 

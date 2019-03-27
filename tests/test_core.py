@@ -161,6 +161,22 @@ class CoreTestCase(SCMVerTestCase):
 
             self.assertIsNone(core.stat(path, **kwargs))
 
+        with self.tempdir() as path:
+            try:
+                import pkg_resources
+            except ImportError:
+                pass
+            else:
+                iter_entry_points = pkg_resources.iter_entry_points
+                pkg_resources.iter_entry_points = lambda *a, **kw: iter(())
+                try:
+                    self.assertIsNone(core.stat(path))
+
+                    os.mkdir(os.path.join(path, '.hg'))
+                    self.assertEqual(core.stat(path), core.SCMInfo(branch='default'))
+                finally:
+                    pkg_resources.iter_entry_points = iter_entry_points
+
     def test_invalid_version(self):
         for v in ('', 'version', '1.0-', '1.0+', '1.0+_'):
             with self.assertRaises(core.VersionError):
