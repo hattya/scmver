@@ -40,6 +40,9 @@ def parse(root, name='.git', **kwargs):
         out = run(*args, cwd=root)[0].strip().rsplit('-', 2)
 
         branch = run('rev-parse', '--abbrev-ref', 'HEAD', cwd=root)[0].strip()
+        if branch == 'HEAD':
+            branch = run('symbolic-ref', '--short', 'HEAD', cwd=root)[0].strip() or None
+
         if len(out) == 3:
             return core.SCMInfo(out[0], int(out[1]), out[2][1:].rstrip('+'), out[2].endswith('+'), branch)
         elif out[0]:

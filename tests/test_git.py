@@ -57,7 +57,7 @@ class GitTestCase(SCMVerTestCase):
             self.assertIsNone(git.parse('.', name=name))
 
         self.init()
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='HEAD'))
+        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
 
     def test_no_tags(self):
         self.init()
@@ -104,3 +104,20 @@ class GitTestCase(SCMVerTestCase):
             self.assertIsNotNone(info.revision)
             self.assertFalse(info.dirty)
             self.assertEqual(info.branch, 'master')
+
+    def test_detached_HEAD(self):
+        self.init()
+        self.touch('spam')
+        git.run('add', '.')
+        git.run('commit', '-m', '.')
+        self.touch('eggs')
+        git.run('add', '.')
+        git.run('commit', '-m', '.')
+        git.run('checkout', 'HEAD~1')
+
+        info = git.parse('.', name='.git')
+        self.assertEqual(info.tag, '0.0')
+        self.assertEqual(info.distance, 1)
+        self.assertIsNotNone(info.revision)
+        self.assertFalse(info.dirty)
+        self.assertIsNone(info.branch)
