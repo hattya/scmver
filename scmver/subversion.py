@@ -89,7 +89,7 @@ def _info(root):
 
 def _is_wc_root(root, info):
     root = os.path.normpath(os.path.abspath(root))
-    if root == info.get('Working Copy Root Path'):
+    if os.path.normcase(root) == os.path.normcase(info.get('Working Copy Root Path', '')):
         return True
     elif info:
         p = os.path.dirname(root)
