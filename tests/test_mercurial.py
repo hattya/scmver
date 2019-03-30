@@ -33,7 +33,7 @@ from scmver import core, mercurial as hg, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('hg'), 'requires Mercurial')
+@unittest.skipUnless(util.which('hg'), 'requires Mercurial 3.6+')
 class MercurialTestCase(SCMVerTestCase):
 
     def setUp(self):

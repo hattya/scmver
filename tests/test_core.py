@@ -77,6 +77,7 @@ class CoreTestCase(SCMVerTestCase):
             def file():
                 return __file__
         """)
+
         with self.tempdir() as path:
             spam = os.path.join(path, 'spam.py')
             with open(spam, 'w') as fp:

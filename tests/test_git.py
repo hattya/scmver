@@ -31,7 +31,7 @@ from scmver import core, git, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('git'), 'requires Git')
+@unittest.skipUnless(util.which('git'), 'requires Git 1.7.10+')
 class GitTestCase(SCMVerTestCase):
 
     def setUp(self):

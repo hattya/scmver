@@ -31,7 +31,7 @@ from scmver import core, subversion as svn, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('svn') and util.which('svnadmin'), 'requires Subversion')
+@unittest.skipUnless(util.which('svn') and util.which('svnadmin'), 'requires Subversion 1.7+')
 class SubversionTestCase(SCMVerTestCase):
 
     def setUp(self):

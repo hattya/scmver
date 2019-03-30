@@ -37,6 +37,7 @@ class BazaarTestCase(SCMVerTestCase):
     def setUp(self):
         self._cwd = os.getcwd()
         self._root = self.mkdtemp()
+        self._branch = os.path.join(self._root, 'trunk')
         os.chdir(self._root)
 
     def tearDown(self):
@@ -45,12 +46,12 @@ class BazaarTestCase(SCMVerTestCase):
 
     def init(self):
         bzr.run('init-repository', self._root)
-        bzr.run('init', 'trunk')
-        os.chdir('trunk')
+        bzr.run('init', self._branch)
+        os.chdir(self._branch)
         bzr.run('whoami', '--branch', 'scmver <scmver@example.com>')
 
     def touch(self, path):
-        with open(os.path.join(self._root, 'trunk', path), 'w'):
+        with open(os.path.join(self._branch, path), 'w'):
             pass
 
     def test_empty(self):
