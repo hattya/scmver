@@ -95,7 +95,7 @@ def _is_wc_root(root, info):
         p = os.path.dirname(root)
         return (p == root
                 or not os.path.isdir(os.path.join(p, '.svn'))
-                or _info(p).get('Repository UUID') == info['Repository UUID'])
+                or _info(p).get('Repository UUID') != info['Repository UUID'])
     return False
 
 
