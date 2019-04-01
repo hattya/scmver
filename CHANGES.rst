@@ -4,6 +4,8 @@ scmver Changelog
 Version 0.3
 -----------
 
+Release date: 2019-04-01
+
 * Add support for Bazaar.
 * Improve branch detection of Git.
 * Improve change detection of Git.
