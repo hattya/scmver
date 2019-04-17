@@ -7,6 +7,7 @@ Version 0.4
 * Add functions to retrieve versions of VCSes.
 
   * ``git.version``
+  * ``mercurial.version``
 
 
 Version 0.3

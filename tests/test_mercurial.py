@@ -23,8 +23,7 @@ class MercurialTestCase(SCMVerTestCase):
         self._root = self.mkdtemp()
         os.chdir(self._root)
 
-        out = hg.run('version')[0].splitlines()[0]
-        self.version = tuple(map(int, out.split()[-1][:-1].split('.')))
+        self.version = hg.version()
 
     def tearDown(self):
         os.chdir(self._cwd)
@@ -154,3 +153,37 @@ class MercurialTestCase(SCMVerTestCase):
 
             with self.assertRaises(ValueError):
                 hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})
+
+    def test_version(self):
+        self.assertGreaterEqual(len(hg.version()), 3)
+
+        run = hg.run
+        try:
+            # >= 0.6c (changeset 849:8933ef744325)
+            new = textwrap.dedent("""\
+                Mercurial Distributed SCM (version {})
+
+                ...
+            """)
+            # <= 0.6b
+            old = textwrap.dedent("""\
+                Mercurial version {}
+
+                ...
+            """)
+            for out, e in (
+                (new.format('4.6.2'), (4, 6, 2)),
+                (new.format('4.6'), (4, 6, 0)),
+                (new.format('4.6rc1'), (4, 6, 0, 'rc', 1)),
+                (new.format('4.6rc0'), (4, 6, 0, 'rc', 0)),
+                (new.format('4.5.3'), (4, 5, 3)),
+                (new.format('4.5'), (4, 5, 0)),
+                (new.format('4.5-rc'), (4, 5, 0, 'rc', 0)),
+                (old.format('0.6b'), (0, 6, 0, 'b')),
+                (old.format('0.6'), (0, 6, 0)),
+                ('', ()),
+            ):
+                hg.run = lambda *a, **kw: (out, '')
+                self.assertEqual(hg.version(), e)
+        finally:
+            hg.run = run

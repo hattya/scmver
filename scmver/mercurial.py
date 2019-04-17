@@ -12,11 +12,27 @@ import re
 from . import core, util
 
 
-__all__ = ['parse', 'run']
+__all__ = ['parse', 'version', 'run']
 
 _TAG = 'mercurial.tag'
 # environ
 _ENV = {'HGRCPATH': ''}
+
+_version_re = re.compile(r"""
+    \A
+    Mercurial \s+
+    .*
+    version \s+
+
+    (?P<release>
+        [0-9]+ (?:\. [0-9]+)+
+    )
+    (?P<alpha>[a-z]+)?
+    (?:
+        -? (?P<rc>rc [0-9]*)
+    )?
+    (?:[+)] | \Z)
+""", re.VERBOSE)
 
 
 def parse(root, name='.hg', **kwargs):
@@ -66,6 +82,23 @@ def parse(root, name='.hg', **kwargs):
 
 def _tag_of(tag):
     return tag if tag != 'null' else '0.0'
+
+
+def version():
+    out = run('version')[0].splitlines()
+    m = _version_re.match(out[0] if out else '')
+    if not m:
+        return ()
+
+    v = tuple(map(int, m.group('release').split('.')))
+    if len(v) < 3:
+        v += (0,) * (3 - len(v))
+    if m.group('alpha'):
+        v += (m.group('alpha'),)
+    if m.group('rc'):
+        rc = m.group('rc')
+        v += ('rc', int(rc[2:]) if rc != 'rc' else 0)
+    return v
 
 
 def run(*args, **kwargs):
