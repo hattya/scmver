@@ -6,12 +6,34 @@
 #   SPDX-License-Identifier: MIT
 #
 
+import re
+
 from . import core, util
 
 
-__all__ = ['parse', 'run']
+__all__ = ['parse', 'version', 'run']
 
 _TAG = 'git.tag'
+
+_version_re = re.compile(r"""
+    \A
+    git \s+
+    version \s+
+
+    (?P<release>
+        [0-9]+ (?:\. [0-9]+)+
+    )
+    (?P<alpha>[a-z]+)?
+    (?:
+        - rc (?P<rc>[0-9]+)
+    )?
+    # Git for Windows
+    (?:
+        \. (?P<windows_s>windows | msysgit)
+        \. (?P<windows_n>[0-9]+)
+    )?
+    \Z
+""", re.VERBOSE)
 
 
 def parse(root, name='.git', **kwargs):
@@ -35,6 +57,23 @@ def parse(root, name='.git', **kwargs):
         elif branch:
             return core.SCMInfo(dirty=any(l for l in run('status', '--porcelain', cwd=root)[0].splitlines() if l[0] != '?'),
                                 branch=branch)
+
+
+def version():
+    m = _version_re.match(run('--version')[0].strip())
+    if not m:
+        return ()
+
+    v = tuple(map(int, m.group('release').split('.')))
+    if len(v) < 4:
+        v += (0,) * (4 - len(v))
+    if m.group('alpha'):
+        v += (m.group('alpha'),)
+    if m.group('rc'):
+        v += ('rc', int(m.group('rc')))
+    if m.group('windows_s'):
+        v += (m.group('windows_s'), int(m.group('windows_n')))
+    return v
 
 
 def run(*args, **kwargs):

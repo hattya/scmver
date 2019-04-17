@@ -1,6 +1,14 @@
 scmver Changelog
 ================
 
+Version 0.4
+-----------
+
+* Add functions to retrieve versions of VCSes.
+
+  * ``git.version``
+
+
 Version 0.3
 -----------
 

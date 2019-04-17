@@ -13,7 +13,7 @@ from scmver import core, git, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('git'), 'requires Git 1.7.10+')
+@unittest.skipUnless(util.which('git') and git.version() >= (1, 7, 10), 'requires Git 1.7.10+')
 class GitTestCase(SCMVerTestCase):
 
     def setUp(self):
@@ -109,3 +109,24 @@ class GitTestCase(SCMVerTestCase):
         self.assertIsNotNone(info.revision)
         self.assertFalse(info.dirty)
         self.assertIsNone(info.branch)
+
+    def test_version(self):
+        self.assertGreaterEqual(len(git.version()), 4)
+
+        run = git.run
+        try:
+            out = 'git version {}'
+            for v, e in (
+                ('2.21.0', (2, 21, 0, 0)),
+                ('2.21.0.windows.1', (2, 21, 0, 0, 'windows', 1)),
+                ('2.21.0-rc2', (2, 21, 0, 0, 'rc', 2)),
+                ('2.21.0-rc2.windows.1', (2, 21, 0, 0, 'rc', 2, 'windows', 1)),
+                ('1.8.5.2', (1, 8, 5, 2)),
+                ('1.8.5.2.msysgit.0', (1, 8, 5, 2, 'msysgit', 0)),
+                ('1.0.0b', (1, 0, 0, 0, 'b')),
+                ('', ()),
+            ):
+                git.run = lambda *a, **kw: (out.format(v) if v else '', '')
+                self.assertEqual(git.version(), e)
+        finally:
+            git.run = run
