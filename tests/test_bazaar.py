@@ -7,6 +7,7 @@
 #
 
 import os
+import textwrap
 import unittest
 
 from scmver import core, bazaar as bzr, util
@@ -75,3 +76,37 @@ class BazaarTestCase(SCMVerTestCase):
         ):
             kwargs = {'bazaar.tag': pat}
             self.assertEqual(bzr.parse('.', name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
+
+    def test_version(self):
+        self.assertGreaterEqual(len(bzr.version()), 3)
+
+        run = bzr.run
+        try:
+            # >= 0.10 (revision 1819.1.5)
+            new = textwrap.dedent("""\
+                Bazaar (bzr) {}
+                  ...
+            """)
+            # <= 0.9
+            old = textwrap.dedent("""\
+                bzr (bazaar-ng) {}
+                  ...
+            """)
+            for out, e in (
+                (new.format('2.1.0'), (2, 1, 0)),
+                (new.format('2.1.0rc2'), (2, 1, 0, 'rc', 2)),
+                (new.format('2.1.0b4'), (2, 1, 0, 'b', 4)),
+                (new.format('2.1.0dev3'), (2, 1, 0, 'dev', 3)),
+                (new.format('1.6'), (1, 6, 0)),
+                (new.format('1.6rc5'), (1, 6, 0, 'rc', 5)),
+                (new.format('1.6beta3'), (1, 6, 0, 'b', 3)),
+                (new.format('1.6dev'), (1, 6, 0, 'dev', 0)),
+                (old.format('0.9.0'), (0, 9, 0)),
+                (old.format('0.8.2'), (0, 8, 2)),
+                (old.format('0.0.2.1'), (0, 0, 2, 1)),
+                ('', ()),
+            ):
+                bzr.run = lambda *a, **kw: (out, '')
+                self.assertEqual(bzr.version(), e)
+        finally:
+            bzr.run = run

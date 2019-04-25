@@ -11,9 +11,35 @@ import re
 from . import core, util
 
 
-__all__ = ['parse', 'run']
+__all__ = ['parse', 'version', 'run']
 
 _TAG = 'bazaar.tag'
+
+_version_re = re.compile(r"""
+    \A
+    (?:Bazaar \s+ \(bzr\) | bzr \s+ \(bazaar-ng\)) \s+
+    # version number
+    (?P<release>
+        [0-9]+ (?:\. [0-9]+)+
+    )
+    # release level
+    (?:
+        (?:
+            (?P<pre_s>
+                b  | beta |
+                rc
+            )
+            (?P<pre_n>[0-9]+)
+        ) |
+        (?:
+            (?P<dev_s>
+                dev
+            )
+            (?P<dev_n>[0-9]*)
+        )
+    )?
+    \Z
+""", re.VERBOSE)
 
 
 def parse(root, name='.bzr', **kwargs):
@@ -50,6 +76,24 @@ def _distance_of(root, rev=None):
     else:
         off = 1
     return len(run('log', '-r', '{}..'.format(rev), '-n', '0', '--line', cwd=root)[0].splitlines()) - off
+
+
+def version():
+    out = run('version')[0].splitlines()
+    m = _version_re.match(out[0] if out else '')
+    if not m:
+        return ()
+
+    v = tuple(map(int, m.group('release').split('.')))
+    if len(v) < 3:
+        v += (0,) * (3 - len(v))
+    if m.group('pre_s'):
+        s = m.group('pre_s')
+        v += ('b' if s == 'beta' else s, int(m.group('pre_n')))
+    elif m.group('dev_s'):
+        n = m.group('dev_n')
+        v += (m.group('dev_s'), int(n) if n else 0)
+    return v
 
 
 def run(*args, **kwargs):

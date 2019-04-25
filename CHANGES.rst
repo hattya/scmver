@@ -6,6 +6,7 @@ Version 0.4
 
 * Add functions to retrieve versions of VCSes.
 
+  * ``bazaar.version``
   * ``git.version``
   * ``mercurial.version``
   * ``subversion.version``
