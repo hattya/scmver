@@ -8,6 +8,7 @@ Version 0.4
 
   * ``git.version``
   * ``mercurial.version``
+  * ``subversion.version``
 
 
 Version 0.3

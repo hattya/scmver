@@ -13,7 +13,7 @@ import xml.etree.cElementTree as ET
 from . import core, util
 
 
-__all__ = ['parse', 'run']
+__all__ = ['parse', 'version', 'run']
 
 _TAG = 'subversion.tag'
 # layout
@@ -22,6 +22,34 @@ _BRANCHES = 'subversion.branches'
 _TAGS = 'subversion.tags'
 # status
 _MODIFIED = frozenset(('added', 'conflicted', 'deleted', 'incomplete', 'missing', 'modified', 'obstructed', 'replaced'))
+
+_version_re = re.compile(r"""
+    \A
+    (?:svn | Subversion \s+ Client) , \s+
+    version \s+
+    # version number
+    (?P<release>
+        [0-9]+ (?:\. [0-9]+)+
+    )
+    # version tag
+    \s+
+    \(
+        (?:
+            # pre-release
+            (?:
+                (?P<pre_s>
+                    Alpha                 |
+                    Beta                  |
+                    Release \s+ Candidate
+                )
+                \s*
+                (?P<pre_n>[0-9]+)
+            ) |
+            # final release
+            r [0-9]+
+        )
+    \)
+""", re.IGNORECASE | re.VERBOSE)
 
 
 def parse(root, name='.svn', **kwargs):
@@ -104,6 +132,19 @@ def _branch_of(info, **kwargs):
 
 def _rel(key, default, **kwargs):
     return '/' + os.path.normpath(kwargs.get(key, default)).replace(os.sep, '/').strip('/') + '/'
+
+
+def version():
+    out = run('--version')[0].splitlines()
+    m = _version_re.match(out[0] if out else '')
+    if not m:
+        return ()
+
+    v = tuple(map(int, m.group('release').split('.')))
+    if m.group('pre_s'):
+        s = m.group('pre_s').lower()
+        v += ('rc' if s == 'release candidate' else s[0], int(m.group('pre_n')))
+    return v
 
 
 def run(*args, **kwargs):

@@ -7,13 +7,14 @@
 #
 
 import os
+import textwrap
 import unittest
 
 from scmver import core, subversion as svn, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('svn') and util.which('svnadmin'), 'requires Subversion 1.7+')
+@unittest.skipUnless(util.which('svn') and util.which('svnadmin') and svn.version() >= (1, 7), 'requires Subversion 1.7+')
 class SubversionTestCase(SCMVerTestCase):
 
     def setUp(self):
@@ -126,3 +127,36 @@ class SubversionTestCase(SCMVerTestCase):
         with open('file', 'w'):
             pass
         self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=1, revision=1))
+
+    def test_version(self):
+        self.assertGreaterEqual(len(svn.version()), 3)
+
+        run = svn.run
+        try:
+            # >= 0.14.4 (revision 3553)
+            new = textwrap.dedent("""\
+                svn, version {} ({})
+                   compiled ...
+
+                ...
+            """)
+            # <= 0.14.3
+            old = textwrap.dedent("""\
+                Subversion Client, version {} ({})
+                   compiled ...
+
+                ...
+            """)
+            for out, e in (
+                (new.format('1.9.0', 'r1692801'), (1, 9, 0)),
+                (new.format('1.9.0', 'Release Candidate 3'), (1, 9, 0, 'rc', 3)),
+                (new.format('1.9.0', 'Beta 1'), (1, 9, 0, 'b', 1)),
+                (new.format('1.9.0', 'Alpha 2'), (1, 9, 0, 'a', 2)),
+                (old.format('0.14.3', 'r3200'), (0, 14, 3)),
+                (old.format('0.9.0', 'r1302'), (0, 9, 0)),
+                ('', ()),
+            ):
+                svn.run = lambda *a, **kw: (out, '')
+                self.assertEqual(svn.version(), e)
+        finally:
+            svn.run = run
