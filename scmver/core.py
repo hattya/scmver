@@ -57,7 +57,7 @@ _pep440_re = re.compile(r"""
             ) |
             -
         )
-        (?P<post_n>(?(post_s)[0-9]*|[0-9]+))
+        (?P<post_n>(?(post_s)[0-9]* | [0-9]+))
     )?
     (?:             # development release segment
         (?P<dev_sep>[-._])?
@@ -163,10 +163,10 @@ def stat(path, **kwargs):
         if not impls:
             raise ImportError
     except ImportError:
-        from . import bazaar, git, mercurial, subversion
+        from . import bazaar as bzr, git, mercurial as hg, subversion as svn
 
-        impls = [('.bzr', bazaar.parse), ('.git', git.parse), ('.hg', mercurial.parse), ('.hg_archival.txt', mercurial.parse),
-                 ('.svn', subversion.parse)]
+        impls = [('.bzr', bzr.parse), ('.git', git.parse), ('.hg', hg.parse), ('.hg_archival.txt', hg.parse),
+                 ('.svn', svn.parse)]
 
     path = os.path.abspath(path)
     while True:

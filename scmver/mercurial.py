@@ -16,7 +16,7 @@ __all__ = ['parse', 'version', 'run']
 
 _TAG = 'mercurial.tag'
 # environ
-_ENV = {'HGRCPATH': ''}
+_env = {'HGRCPATH': ''}
 
 _version_re = re.compile(r"""
     \A
@@ -102,5 +102,5 @@ def version():
 
 
 def run(*args, **kwargs):
-    kwargs['env'] = _ENV
+    kwargs['env'] = _env
     return util.exec_((util.which('hg'),) + args, **kwargs)
