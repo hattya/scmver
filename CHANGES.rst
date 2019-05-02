@@ -11,6 +11,8 @@ Version 0.4
   * ``mercurial.version``
   * ``subversion.version``
 
+* Add ``--bzr-tag`` option to scmver script.
+
 
 Version 0.3
 -----------
