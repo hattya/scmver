@@ -10,16 +10,22 @@ import os
 import subprocess
 import sys
 
+from . import _compat as five
+
 
 __all__ = ['exec_', 'which']
 
 
 def exec_(args, cwd=None, env=None):
+    if five.PY2:
+        fs_enc = sys.getfilesystemencoding() or 'ascii'
+        args = tuple(a.encode(fs_enc, 'replace') if isinstance(a, five.unicode) else a for a in args)
     env = env.copy() if env else {}
     env['LANGUAGE'] = 'C'
     for k in ('PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
         if k in os.environ:
             env[k] = os.environ[k]
+
     proc = subprocess.Popen(args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,

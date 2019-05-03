@@ -15,14 +15,18 @@ from scmver import util
 class UtilTestCase(unittest.TestCase):
 
     def test_exec(self):
-        out, err = util.exec_((sys.executable, '-V'))
-        ver = 'Python {}.{}.{}'.format(*sys.version_info)
-        if sys.version_info[0] == 2:
-            self.assertEqual(out, '')
-            self.assertEqual(err.strip(), ver)
-        else:
-            self.assertEqual(out.strip(), ver)
-            self.assertEqual(err, '')
+        for args in (
+            (sys.executable, r'-V'),
+            (sys.executable, u'-V'),
+        ):
+            out, err = util.exec_(args)
+            ver = 'Python {}.{}.{}'.format(*sys.version_info)
+            if sys.version_info[0] == 2:
+                self.assertEqual(out, '')
+                self.assertEqual(err.strip(), ver)
+            else:
+                self.assertEqual(out.strip(), ver)
+                self.assertEqual(err, '')
 
     def test_which(self):
         sh = 'sh' if sys.platform != 'win32' else 'cmd'
