@@ -6,6 +6,7 @@
 #   SPDX-License-Identifier: MIT
 #
 
+import locale
 import os
 import subprocess
 import sys
@@ -16,7 +17,7 @@ from . import _compat as five
 __all__ = ['exec_', 'which']
 
 
-def exec_(args, cwd=None, env=None):
+def exec_(args, cwd=None, env=None, encoding=None, errors='strict'):
     if five.PY2:
         fs_enc = sys.getfilesystemencoding() or 'ascii'
         args = tuple(a.encode(fs_enc, 'replace') if isinstance(a, five.unicode) else a for a in args)
@@ -25,14 +26,16 @@ def exec_(args, cwd=None, env=None):
     for k in ('PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
         if k in os.environ:
             env[k] = os.environ[k]
+    if encoding is None:
+        encoding = locale.getpreferredencoding(False)
 
     proc = subprocess.Popen(args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             cwd=cwd,
-                            env=env,
-                            universal_newlines=True)
-    return proc.communicate()
+                            env=env)
+    out, err = proc.communicate()
+    return out.decode(encoding, errors), err.decode(encoding, errors)
 
 
 def which(name):
