@@ -8,6 +8,7 @@
 
 import contextlib
 import hashlib
+import locale
 import os
 import shutil
 import stat
@@ -22,8 +23,22 @@ __all__ = ['SCMVerTestCase']
 
 class SCMVerTestCase(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls._lc = locale.setlocale(locale.LC_ALL)
+        locale.setlocale(locale.LC_ALL, '')
+
+    @classmethod
+    def tearDownClass(cls):
+        locale.setlocale(locale.LC_ALL, cls._lc)
+
     if five.PY2:
         assertRegex = unittest.TestCase.assertRegexpMatches
+
+    def check_locale(self):
+        encoding = locale.getpreferredencoding(False)
+        if encoding.lower() not in ('cp932', 'euc-jp', 'utf-8'):
+            self.skipTest('requires UTF-8 or Japanese locale')
 
     def mkdtemp(self):
         return tempfile.mkdtemp(prefix='scmver-')

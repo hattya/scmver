@@ -89,7 +89,7 @@ def generate(path, version, info=None, template=_TEMPLATE):
         fp.write(template.format(**kwargs))
 
 
-def get_version(root='.', **kwargs):
+def get_version(root=u'.', **kwargs):
     def take(d, *keys):
         return {k: d[k] for k in d if k in keys}
 

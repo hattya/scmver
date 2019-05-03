@@ -9,6 +9,7 @@
 import os
 import unittest
 
+from scmver import _compat as five
 from scmver import core, git, util
 from base import SCMVerTestCase
 
@@ -92,6 +93,24 @@ class GitTestCase(SCMVerTestCase):
             self.assertIsNotNone(info.revision)
             self.assertFalse(info.dirty)
             self.assertEqual(info.branch, 'master')
+
+    def test_i18n(self):
+        if five.PY2:
+            self.check_locale()
+
+        self.init()
+        git.run('checkout', '-b', u'\u30d6\u30e9\u30f3\u30c1')
+        self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+        git.run('add', '.')
+        git.run('commit', '-m', '.')
+        git.run('tag', u'\u30bf\u30b0')
+
+        info = git.parse('.', name='.git')
+        self.assertEqual(info.tag, u'\u30bf\u30b0')
+        self.assertEqual(info.distance, 0)
+        self.assertIsNotNone(info.revision)
+        self.assertFalse(info.dirty)
+        self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
 
     def test_detached_HEAD(self):
         self.init()

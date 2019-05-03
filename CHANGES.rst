@@ -12,6 +12,7 @@ Version 0.4
   * ``subversion.version``
 
 * Add ``--bzr-tag`` option to scmver script.
+* Add support for Unicode branches and tags.
 
 
 Version 0.3

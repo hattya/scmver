@@ -51,7 +51,7 @@ def parse(root, name='.bzr', **kwargs):
         dirty = info['clean'] == 'False'
 
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
-        out = [l.split() for l in run('tags', cwd=root)[0].splitlines()]
+        out = [l.split() for l in run('tags', cwd=root, env={'PYTHONIOENCODING': 'utf-8'}, encoding='utf-8')[0].splitlines()]
         out.sort(key=lambda v: v[1], reverse=True)
         for tag, rev in out:
             if (rev == info['revno']
@@ -65,7 +65,7 @@ def parse(root, name='.bzr', **kwargs):
 
 
 def _version_info(root):
-    out = run('version-info', '--check-clean', cwd=root)[0].splitlines()
+    out = run('version-info', '--check-clean', cwd=root, encoding='utf-8')[0].splitlines()
     return dict((s.strip() for s in l.split(':', 1)) for l in out)
 
 

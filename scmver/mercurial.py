@@ -6,9 +6,11 @@
 #   SPDX-License-Identifier: MIT
 #
 
+import io
 import os
 import re
 
+from . import _compat as five
 from . import core, util
 
 
@@ -34,10 +36,14 @@ _version_re = re.compile(r"""
     (?:[+)] | \Z)
 """, re.VERBOSE)
 
+if five.PY2:
+    bytes = bytearray
+
 
 def parse(root, name='.hg', **kwargs):
     if name == '.hg':
-        out = run('identify', '-ib', cwd=root)[0].strip().split()
+        env = {'HGENCODING': 'utf-8'}
+        out = run('identify', '-ib', cwd=root, env=env, encoding='utf-8')[0].strip().split()
         if len(out) == 2:
             try:
                 null = int(out[0][:-1]) == 0
@@ -48,15 +54,17 @@ def parse(root, name='.hg', **kwargs):
             if null:
                 return core.SCMInfo(dirty=dirty, branch=branch)
 
-            pat = "'re:{}'".format(kwargs[_TAG]) if _TAG in kwargs else ''
-            args = ['log', '-r', '.', '-T', "{node}\t{latesttag(" + pat + ") % '{tag}\t{changes}\t'}"]
-            out = run(*args, cwd=root)[0].split('\t')
+            pat = "'re:{}'".format(''.join(map(r'\x{:02x}'.format, bytes(kwargs[_TAG], 'utf-8')))) if _TAG in kwargs else ''
+            tmpl = "{node}\t{latesttag(" + pat + ") % '{tag}\t{changes}\t'}"
+            out = run('log', '-r', '.', '-T', tmpl, cwd=root, env=env, encoding='utf-8')[0].split('\t')
             if len(out) >= 3:
                 return core.SCMInfo(_tag_of(out[1]), int(out[2]), out[0], dirty, branch)
     elif name == '.hg_archival.txt':
         p = os.path.join(root, name)
         try:
-            with open(p) as fp:
+            # NOTE: tags should also be encoded in UTF-8, but they are
+            # encoded in the local encoding...
+            with io.open(p, encoding='utf-8') as fp:
                 meta = {'latesttag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
@@ -102,5 +110,10 @@ def version():
 
 
 def run(*args, **kwargs):
-    kwargs['env'] = _env
+    if 'env' in kwargs:
+        env = _env.copy()
+        env.update(kwargs['env'])
+    else:
+        env = _env
+    kwargs['env'] = env
     return util.exec_((util.which('hg'),) + args, **kwargs)

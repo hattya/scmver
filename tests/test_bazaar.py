@@ -20,8 +20,9 @@ class BazaarTestCase(SCMVerTestCase):
     def setUp(self):
         self._cwd = os.getcwd()
         self._root = self.mkdtemp()
-        self._branch = os.path.join(self._root, 'trunk')
         os.chdir(self._root)
+
+        self.branch = os.path.join(self._root, 'trunk')
 
     def tearDown(self):
         os.chdir(self._cwd)
@@ -29,12 +30,12 @@ class BazaarTestCase(SCMVerTestCase):
 
     def init(self):
         bzr.run('init-repository', self._root)
-        bzr.run('init', self._branch)
-        os.chdir(self._branch)
+        bzr.run('init', self.branch)
+        os.chdir(self.branch)
         bzr.run('whoami', '--branch', 'scmver <scmver@example.com>')
 
     def touch(self, path):
-        with open(os.path.join(self._branch, path), 'w'):
+        with open(os.path.join(self.branch, path), 'w'):
             pass
 
     def test_empty(self):
@@ -76,6 +77,22 @@ class BazaarTestCase(SCMVerTestCase):
         ):
             kwargs = {'bazaar.tag': pat}
             self.assertEqual(bzr.parse('.', name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
+
+    def test_i18n(self):
+        self.check_locale()
+
+        branch = self.branch
+        self.branch = os.path.join(os.path.dirname(self.branch), u'\u30d6\u30e9\u30f3\u30c1')
+        try:
+            self.init()
+            self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+            bzr.run('add', '.')
+            bzr.run('commit', '-m', '_')
+            bzr.run('tag', u'\u30bf\u30b0')
+
+            self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(u'\u30bf\u30b0', 0, '1', False, u'\u30d6\u30e9\u30f3\u30c1'))
+        finally:
+            self.branch = branch
 
     def test_version(self):
         self.assertGreaterEqual(len(bzr.version()), 3)

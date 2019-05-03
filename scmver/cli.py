@@ -182,13 +182,13 @@ def stat(**opts):
         return
 
     if info.tag != '0.0':
-        click.echo('Tag:      {.tag}'.format(info))
+        click.echo(u'Tag:      {.tag}'.format(info))
     click.echo('Distance: {.distance}'.format(info))
     if info.revision:
         click.echo('Revision: {.revision}'.format(info))
     click.echo('Dirty:    {.dirty}'.format(info))
     if info.branch:
-        click.echo('Branch:   {.branch}'.format(info))
+        click.echo(u'Branch:   {.branch}'.format(info))
 
 
 def _next_version(info, **opts):

@@ -10,6 +10,7 @@ import os
 import re
 import xml.etree.cElementTree as ET
 
+from . import _compat as five
 from . import core, util
 
 
@@ -62,7 +63,7 @@ def parse(root, name='.svn', **kwargs):
         branch = _branch_of(info, **kwargs)
 
         out = run('status', '--xml', cwd=root)[0]
-        for e in ET.fromstring(out).iterfind('.//wc-status'):
+        for e in out.iterfind('.//wc-status'):
             if (e.get('item') in _MODIFIED
                 or e.get('props') in _MODIFIED):
                 dirty = True
@@ -76,7 +77,7 @@ def parse(root, name='.svn', **kwargs):
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
         while r > 0:
             out = run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0]
-            for e in ET.fromstring(out).iterfind('./logentry'):
+            for e in out.iterfind('./logentry'):
                 r = int(e.get('revision'))
                 for p in e.iterfind('.//path[@kind="dir"]'):
                     if not p.text.startswith(tags):
@@ -113,7 +114,7 @@ def _distance_of(root, info, rev):
     rev = str(rev)
     i = 0
     out = run('log', '-r', '{}:{}'.format(info.get('Revision', 'BASE'), rev), '--xml', cwd=root)[0]
-    for e in ET.fromstring(out).iterfind('./logentry'):
+    for e in out.iterfind('./logentry'):
         if e.get('revision') != rev:
             i += 1
     return i
@@ -127,7 +128,7 @@ def _branch_of(info, **kwargs):
         return 'trunk'
     branches = info['Repository Root'] + _rel(_BRANCHES, 'branches', **kwargs)
     if url.startswith(branches):
-        return url[len(branches):].split('/', 1)[0]
+        return five.urlunquote(url[len(branches):].split('/', 1)[0])
 
 
 def _rel(key, default, **kwargs):
@@ -148,4 +149,8 @@ def version():
 
 
 def run(*args, **kwargs):
-    return util.exec_((util.which('svn'), '--non-interactive') + args, **kwargs)
+    xml = '--xml' in args
+    if xml:
+        kwargs['encoding'] = 'utf-8'
+    out, err = util.exec_((util.which('svn'), '--non-interactive') + args, **kwargs)
+    return ET.fromstring(out.encode('utf-8')) if xml else out, err

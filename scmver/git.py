@@ -7,6 +7,7 @@
 #
 
 import re
+import sys
 
 from . import core, util
 
@@ -77,4 +78,6 @@ def version():
 
 
 def run(*args, **kwargs):
-    return util.exec_((util.which('git'),) + args, **kwargs)
+    if sys.platform == 'win32':
+        kwargs['encoding'] = 'utf-8'
+    return util.exec_((util.which('git'), '-c', 'core.quotepath=false') + args, **kwargs)

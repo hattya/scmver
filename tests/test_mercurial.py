@@ -41,7 +41,7 @@ class MercurialTestCase(SCMVerTestCase):
     @contextlib.contextmanager
     def archive(self):
         with self.tempdir() as path:
-            hg.run('archive', path)
+            hg.run('archive', path, env={'HGENCODING': 'utf-8'})
             os.chdir(path)
             try:
                 yield path
@@ -154,6 +154,34 @@ class MercurialTestCase(SCMVerTestCase):
             with self.assertRaises(ValueError):
                 hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})
 
+    def test_i18n(self):
+        self.check_locale()
+
+        self.init()
+        hg.run('branch', u'\u30d6\u30e9\u30f3\u30c1')
+        self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+        hg.run('add', '.')
+        hg.run('commit', '-m', '.')
+        hg.run('tag', u'\u30bf\u30b0')
+
+        info = hg.parse('.', name='.hg')
+        if self.version < (3, 6):
+            self.assertIsNone(info)
+        else:
+            self.assertEqual(info.tag, u'\u30bf\u30b0')
+            self.assertEqual(info.distance, 1)
+            self.assertIsNotNone(info.revision)
+            self.assertFalse(info.dirty)
+            self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
+
+        with self.archive():
+            info = hg.parse('.', name='.hg_archival.txt')
+            self.assertEqual(info.tag, u'\u30bf\u30b0')
+            self.assertEqual(info.distance, 1)
+            self.assertIsNotNone(info.revision)
+            self.assertFalse(info.dirty)
+            self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
+
     def test_version(self):
         self.assertGreaterEqual(len(hg.version()), 3)
 
@@ -187,3 +215,8 @@ class MercurialTestCase(SCMVerTestCase):
                 self.assertEqual(hg.version(), e)
         finally:
             hg.run = run
+
+    def test_run(self):
+        env = {}
+        hg.run('help', env=env)
+        self.assertEqual(env, {})

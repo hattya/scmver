@@ -22,19 +22,25 @@ def exec_(args, cwd=None, env=None, encoding=None, errors='strict'):
         fs_enc = sys.getfilesystemencoding() or 'ascii'
         args = tuple(a.encode(fs_enc, 'replace') if isinstance(a, five.unicode) else a for a in args)
     env = env.copy() if env else {}
-    env['LANGUAGE'] = 'C'
-    for k in ('PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
+    env['LC_MESSAGES'] = 'C'
+    for k in ('LC_ALL', 'LANG', 'PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
         if k in os.environ:
             env[k] = os.environ[k]
     if encoding is None:
         encoding = locale.getpreferredencoding(False)
 
-    proc = subprocess.Popen(args,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            cwd=cwd,
-                            env=env)
-    out, err = proc.communicate()
+    if cwd:
+        path = five.getcwd()
+        os.chdir(cwd)
+    try:
+        proc = subprocess.Popen(args,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                env=env)
+        out, err = proc.communicate()
+    finally:
+        if cwd:
+            os.chdir(path)
     return out.decode(encoding, errors), err.decode(encoding, errors)
 
 
