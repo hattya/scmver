@@ -163,9 +163,10 @@ def stat(path, **kwargs):
         if not impls:
             raise ImportError
     except ImportError:
-        from . import bazaar as bzr, git, mercurial as hg, subversion as svn
+        from . import bazaar as bzr, fossil as fsl, git, mercurial as hg, subversion as svn
 
-        impls = [('.bzr', bzr.parse), ('.git', git.parse), ('.hg', hg.parse), ('.hg_archival.txt', hg.parse),
+        impls = [('.bzr', bzr.parse), ('.fslckout', fsl.parse), ('_FOSSIL_', fsl.parse),
+                 ('.git', git.parse), ('.hg', hg.parse), ('.hg_archival.txt', hg.parse),
                  ('.svn', svn.parse)]
 
     path = os.path.abspath(path)

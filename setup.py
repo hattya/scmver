@@ -103,6 +103,8 @@ setup(name='scmver',
           ],
           'scmver.parse': [
               '.bzr = scmver.bazaar:parse',
+              '.fslckout = scmver.fossil:parse',
+              '_FOSSIL_ = scmver.fossil:parse',
               '.git = scmver.git:parse',
               '.hg = scmver.mercurial:parse',
               '.hg_archival.txt = scmver.mercurial:parse',

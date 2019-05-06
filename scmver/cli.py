@@ -96,6 +96,9 @@ _stat_options = (
     click.option('--bzr-tag',
                  metavar='REGEX',
                  help='Regular expression to filter tags.'),
+    click.option('--fsl-tag',
+                 metavar='REGEX',
+                 help='Regular expression to filter tags.'),
     click.option('--git-tag',
                  metavar='GLOB',
                  help='Glob pattern to filter tags.'),
@@ -202,6 +205,7 @@ def _stat(path, **opts):
     kwargs = {k: opts[n]
               for k, n in (
                   ('bazaar.tag', 'bzr_tag'),
+                  ('fossil.tag', 'fsl_tag'),
                   ('git.tag', 'git_tag'),
                   ('mercurial.tag', 'hg_tag'),
                   ('subversion.tag', 'svn_tag'),

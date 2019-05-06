@@ -114,9 +114,10 @@ class CoreTestCase(SCMVerTestCase):
         rev = self.revision(b'scmver.core.stat')
 
         with self.tempdir() as path:
-            from scmver import bazaar as bzr, git, mercurial as hg, subversion as svn
+            from scmver import bazaar as bzr, fossil as fsl, git, mercurial as hg, subversion as svn
 
             parse = {m: m.parse for m in (bzr, git, hg, svn)}
+            parse = {m: m.parse for m in (bzr, fsl, git, hg, svn)}
             try:
                 self.assertIsNone(core.stat(path))
                 kwargs = {}
@@ -130,6 +131,18 @@ class CoreTestCase(SCMVerTestCase):
                 bzr.parse = lambda *a, **kw: info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['.bzr'] = False
+
+                # Fossil
+                for name in ('.fslckout', '_FOSSIL_'):
+                    with open(os.path.join(path, name), 'w'):
+                        pass
+                    fsl.parse = lambda *a, **kw: None
+                    self.assertIsNone(core.stat(path, **kwargs))
+
+                    info = core.SCMInfo(revision=rev, branch='trunk')
+                    fsl.parse = lambda *a, **kw: info
+                    self.assertEqual(core.stat(path, **kwargs), info)
+                    kwargs[name] = False
 
                 # Git
                 os.mkdir(os.path.join(path, '.git'))
