@@ -37,7 +37,8 @@ class GitTestCase(SCMVerTestCase):
 
     def test_empty(self):
         for name in ('_', '.git'):
-            self.assertIsNone(git.parse('.', name=name))
+            with self.subTest(name=name):
+                self.assertIsNone(git.parse('.', name=name))
 
         self.init()
         self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
@@ -87,12 +88,13 @@ class GitTestCase(SCMVerTestCase):
             ('v*.*', 'v1.0'),
             ('spam-*.*', 'spam-1.0'),
         ):
-            info = git.parse('.', name='.git', **{'git.tag': pat})
-            self.assertEqual(info.tag, tag)
-            self.assertEqual(info.distance, 0)
-            self.assertIsNotNone(info.revision)
-            self.assertFalse(info.dirty)
-            self.assertEqual(info.branch, 'master')
+            with self.subTest(tag=tag):
+                info = git.parse('.', name='.git', **{'git.tag': pat})
+                self.assertEqual(info.tag, tag)
+                self.assertEqual(info.distance, 0)
+                self.assertIsNotNone(info.revision)
+                self.assertFalse(info.dirty)
+                self.assertEqual(info.branch, 'master')
 
     def test_i18n(self):
         if five.PY2:

@@ -114,33 +114,69 @@ class CoreTestCase(SCMVerTestCase):
         rev = self.revision(b'scmver.core.stat')
 
         with self.tempdir() as path:
-            self.assertIsNone(core.stat(path))
-            kwargs = {}
+            from scmver import bazaar as bzr, git, mercurial as hg, subversion as svn
 
-            os.mkdir(os.path.join(path, '.git'))
-            self.assertIsNone(core.stat(path, **kwargs))
-            kwargs['.git'] = False
+            parse = {m: m.parse for m in (bzr, git, hg, svn)}
+            try:
+                self.assertIsNone(core.stat(path))
+                kwargs = {}
 
-            os.mkdir(os.path.join(path, '.hg'))
-            self.assertEqual(core.stat(path, **kwargs), core.SCMInfo(branch='default'))
-            kwargs['.hg'] = False
+                # Bazaar
+                os.mkdir(os.path.join(path, '.bzr'))
+                bzr.parse = lambda *a, **kw: None
+                self.assertIsNone(core.stat(path))
 
+                info = core.SCMInfo(revision='0', branch='trunk')
+                bzr.parse = lambda *a, **kw: info
+                self.assertEqual(core.stat(path, **kwargs), info)
+                kwargs['.bzr'] = False
+
+                # Git
+                os.mkdir(os.path.join(path, '.git'))
+                git.parse = lambda *a, **kw: None
+                self.assertIsNone(core.stat(path, **kwargs))
+
+                info = core.SCMInfo(branch='master')
+                git.parse = lambda *a, **kw: info
+                self.assertEqual(core.stat(path, **kwargs), info)
+                kwargs['.git'] = False
+
+                # Mercurial
+                os.mkdir(os.path.join(path, '.hg'))
+                hg.parse = lambda *a, **kw: None
+                self.assertIsNone(core.stat(path, **kwargs))
+
+                info = core.SCMInfo(branch='default')
+                hg.parse = lambda *a, **kw: info
+                self.assertEqual(core.stat(path, **kwargs), info)
+                kwargs['.hg'] = False
+
+                # Subversion
+                os.mkdir(os.path.join(path, '.svn'))
+                svn.parse = lambda *a, **kw: None
+                self.assertIsNone(core.stat(path, **kwargs))
+
+                info = core.SCMInfo()
+                svn.parse = lambda *a, **kw: info
+                self.assertEqual(core.stat(path, **kwargs), info)
+                kwargs['.svn'] = False
+            finally:
+                for m in parse:
+                    m.parse = parse[m]
+
+            info = core.SCMInfo(distance=1, revision=rev, branch='default')
             with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
                 fp.write(textwrap.dedent("""\
-                    repo: {0}
-                    node: {0}
-                    branch: default
+                    repo: {0.revision}
+                    node: {0.revision}
+                    branch: {0.branch}
                     latesttag: null
-                    latesttagdistance: 1
-                    changessincelatesttag: 1
-                """.format(rev)))
+                    latesttagdistance: {0.distance}
+                    changessincelatesttag: {0.distance}
+                """.format(info)))
                 fp.flush()
-            self.assertEqual(core.stat(path, **kwargs), core.SCMInfo('0.0', 1, rev, False, 'default'))
+            self.assertEqual(core.stat(path, **kwargs), info)
             kwargs['.hg_archival.txt'] = False
-
-            os.mkdir(os.path.join(path, '.svn'))
-            self.assertIsNone(core.stat(path, **kwargs))
-            kwargs['.svn'] = False
 
             self.assertIsNone(core.stat(path, **kwargs))
 
@@ -155,8 +191,18 @@ class CoreTestCase(SCMVerTestCase):
                 try:
                     self.assertIsNone(core.stat(path))
 
-                    os.mkdir(os.path.join(path, '.hg'))
-                    self.assertEqual(core.stat(path), core.SCMInfo(branch='default'))
+                    info = core.SCMInfo(distance=1, revision=rev, branch='default')
+                    with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
+                        fp.write(textwrap.dedent("""\
+                            repo: {0.revision}
+                            node: {0.revision}
+                            branch: {0.branch}
+                            latesttag: null
+                            latesttagdistance: {0.distance}
+                            changessincelatesttag: {0.distance}
+                        """.format(info)))
+                        fp.flush()
+                    self.assertEqual(core.stat(path), info)
                 finally:
                     pkg_resources.iter_entry_points = iter_entry_points
 

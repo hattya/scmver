@@ -25,7 +25,11 @@ class test(Command):
         pass
 
     def run(self):
-        import unittest
+        self.distribution.fetch_build_eggs(self.distribution.tests_require)
+        try:
+            import unittest2 as unittest
+        except ImportError:
+            import unittest
 
         self.run_command('egg_info')
         # run unittest discover
@@ -49,6 +53,8 @@ package_data = {}
 cmdclass = {
     'test': test,
 }
+
+tests_require = ['unittest2; python_version <= "2.7"']
 
 setup(name='scmver',
       version=scmver.get_version(**{
@@ -83,8 +89,10 @@ setup(name='scmver',
           'Topic :: Utilities',
       ],
       cmdclass=cmdclass,
+      tests_require=tests_require,
       extras_require={
           'cli': ['click'],
+          'test': tests_require,
       },
       entry_points={
           'console_scripts': [

@@ -40,7 +40,8 @@ class SubversionTestCase(SCMVerTestCase):
 
     def test_empty(self):
         for name in ('_', '.svn'):
-            self.assertIsNone(svn.parse('.', name=name))
+            with self.subTest(name=name):
+                self.assertIsNone(svn.parse('.', name=name))
 
         self.create('repo')
         self.checkout('repo', 'wc')
@@ -63,8 +64,9 @@ class SubversionTestCase(SCMVerTestCase):
             ('branches/1.x', 2, '1.x'),
             ('tags', 1, None),
         ):
-            self.switch(path)
-            self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=distance, revision=2, branch=branch))
+            with self.subTest(path=path):
+                self.switch(path)
+                self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=distance, revision=2, branch=branch))
 
     def test_simple(self):
         self.create('repo')
@@ -84,8 +86,9 @@ class SubversionTestCase(SCMVerTestCase):
             ('tags', None),
             ('tags/1.0', None),
         ):
-            self.switch(path)
-            self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo('1.0', 0, 3, False, branch))
+            with self.subTest(path=path):
+                self.switch(path)
+                self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo('1.0', 0, 3, False, branch))
 
     def test_match(self):
         self.create('repo')
@@ -111,8 +114,9 @@ class SubversionTestCase(SCMVerTestCase):
                 ('tags', None),
                 ('tags/1.0', None),
             ):
-                self.switch(path)
-                self.assertEqual(svn.parse('.', name='.svn', **kwargs), core.SCMInfo(tag, 0, 3, False, branch))
+                with self.subTest(path=path, tag=tag):
+                    self.switch(path)
+                    self.assertEqual(svn.parse('.', name='.svn', **kwargs), core.SCMInfo(tag, 0, 3, False, branch))
 
     def test_i18n(self):
         self.check_locale()
@@ -134,8 +138,9 @@ class SubversionTestCase(SCMVerTestCase):
             ('tags', None),
             (u'tags/\u30bf\u30b0', None),
         ):
-            self.switch(path)
-            self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(u'\u30bf\u30b0', 0, 3, False, branch))
+            with self.subTest(path=path):
+                self.switch(path)
+                self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(u'\u30bf\u30b0', 0, 3, False, branch))
 
     def test_status(self):
         self.create('repo')

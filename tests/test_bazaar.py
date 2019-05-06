@@ -40,7 +40,8 @@ class BazaarTestCase(SCMVerTestCase):
 
     def test_empty(self):
         for name in ('_', '.bzr'):
-            self.assertIsNone(bzr.parse('.', name=name))
+            with self.subTest(name=name):
+                self.assertIsNone(bzr.parse('.', name=name))
 
         self.init()
         self.assertIsNone(bzr.parse('..', name='.bzr'))
@@ -75,8 +76,9 @@ class BazaarTestCase(SCMVerTestCase):
             (r'v\d+\..+', 'v1.0'),
             (r'spam-\d+\..+', 'spam-1.0'),
         ):
-            kwargs = {'bazaar.tag': pat}
-            self.assertEqual(bzr.parse('.', name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
+            with self.subTest(tag=tag):
+                kwargs = {'bazaar.tag': pat}
+                self.assertEqual(bzr.parse('.', name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
 
     def test_i18n(self):
         self.check_locale()

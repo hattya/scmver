@@ -13,7 +13,10 @@ import os
 import shutil
 import stat
 import tempfile
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from scmver import _compat as five
 

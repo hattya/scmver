@@ -7,26 +7,27 @@
 #
 
 import sys
-import unittest
 
 from scmver import util
+from base import SCMVerTestCase
 
 
-class UtilTestCase(unittest.TestCase):
+class UtilTestCase(SCMVerTestCase):
 
     def test_exec(self):
         for args in (
             (sys.executable, r'-V'),
             (sys.executable, u'-V'),
         ):
-            out, err = util.exec_(args)
-            ver = 'Python {}.{}.{}'.format(*sys.version_info)
-            if sys.version_info[0] == 2:
-                self.assertEqual(out, '')
-                self.assertEqual(err.strip(), ver)
-            else:
-                self.assertEqual(out.strip(), ver)
-                self.assertEqual(err, '')
+            with self.subTest(args=args):
+                out, err = util.exec_(args)
+                ver = 'Python {}.{}.{}'.format(*sys.version_info)
+                if sys.version_info[0] == 2:
+                    self.assertEqual(out, '')
+                    self.assertEqual(err.strip(), ver)
+                else:
+                    self.assertEqual(out.strip(), ver)
+                    self.assertEqual(err, '')
 
         cmd = 'import sys; getattr(sys.stdout, "buffer", sys.stdout).write(u"\\U0001d70b = 3.14".encode("utf-8"))'
         out, err = util.exec_((sys.executable, '-c', cmd), encoding='utf-8')

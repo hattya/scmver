@@ -54,7 +54,8 @@ class MercurialTestCase(SCMVerTestCase):
 
     def test_empty(self):
         for name in ('_', '.hg', '.hg_archival.txt'):
-            self.assertIsNone(hg.parse('.', name=name))
+            with self.subTest(name=name):
+                self.assertIsNone(hg.parse('.', name=name))
 
         self.init()
         self.assertEqual(hg.parse('.', name='.hg'), core.SCMInfo(branch='default'))
@@ -119,15 +120,16 @@ class MercurialTestCase(SCMVerTestCase):
             (r'v\d+\..+', 'v1.0'),
             (r'spam-\d+\..+', 'spam-1.0'),
         ):
-            info = hg.parse('.', name='.hg', **{'mercurial.tag': pat})
-            if self.version < (3, 6):
-                self.assertIsNone(info)
-            else:
-                self.assertEqual(info.tag, tag)
-                self.assertEqual(info.distance, 1)
-                self.assertIsNotNone(info.revision)
-                self.assertFalse(info.dirty)
-                self.assertEqual(info.branch, 'default')
+            with self.subTest(tag=tag):
+                info = hg.parse('.', name='.hg', **{'mercurial.tag': pat})
+                if self.version < (3, 6):
+                    self.assertIsNone(info)
+                else:
+                    self.assertEqual(info.tag, tag)
+                    self.assertEqual(info.distance, 1)
+                    self.assertIsNotNone(info.revision)
+                    self.assertFalse(info.dirty)
+                    self.assertEqual(info.branch, 'default')
 
         info = hg.parse('.', name='.hg', **{'mercurial.tag': r'__scmver__'})
         if self.version < (3, 6):
@@ -144,12 +146,13 @@ class MercurialTestCase(SCMVerTestCase):
                 (r'v\d+\..+', 'v1.0'),
                 (r'spam-\d+\..+', 'spam-1.0'),
             ):
-                info = hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
-                self.assertEqual(info.tag, tag)
-                self.assertEqual(info.distance, 1)
-                self.assertIsNotNone(info.revision)
-                self.assertFalse(info.dirty)
-                self.assertEqual(info.branch, 'default')
+                with self.subTest(tag=tag):
+                    info = hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
+                    self.assertEqual(info.tag, tag)
+                    self.assertEqual(info.distance, 1)
+                    self.assertIsNotNone(info.revision)
+                    self.assertFalse(info.dirty)
+                    self.assertEqual(info.branch, 'default')
 
             with self.assertRaises(ValueError):
                 hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})
