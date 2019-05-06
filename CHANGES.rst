@@ -14,6 +14,7 @@ Version 0.4
 * Add ``--bzr-tag`` option to scmver script.
 * Add support for Unicode branches and tags.
 * Add support for Fossil.
+* Improve support for ``.hg_archival.txt`` of Mercurial.
 
 
 Version 0.3

@@ -109,6 +109,15 @@ class MercurialTestCase(SCMVerTestCase):
             self.assertFalse(info.dirty)
             self.assertEqual(info.branch, 'default')
 
+        hg.run('update', '-Cr', 'v1.0')
+        with self.archive():
+            info = hg.parse('.', name='.hg_archival.txt')
+            self.assertEqual(info.tag, 'v1.0')
+            self.assertEqual(info.distance, 0)
+            self.assertIsNotNone(info.revision)
+            self.assertFalse(info.dirty)
+            self.assertEqual(info.branch, 'default')
+
     def test_match(self):
         self.init()
         self.touch('file')
@@ -153,6 +162,22 @@ class MercurialTestCase(SCMVerTestCase):
                     self.assertIsNotNone(info.revision)
                     self.assertFalse(info.dirty)
                     self.assertEqual(info.branch, 'default')
+
+            with self.assertRaises(ValueError):
+                hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})
+
+        hg.run('update', '-Cr', 'v1.0')
+        with self.archive():
+            for pat, tag in (
+                (r'v\d+\..+', 'v1.0'),
+                (r'spam-\d+\..+', 'spam-1.0'),
+            ):
+                info = hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': pat})
+                self.assertEqual(info.tag, tag)
+                self.assertEqual(info.distance, 0)
+                self.assertIsNotNone(info.revision)
+                self.assertFalse(info.dirty)
+                self.assertEqual(info.branch, 'default')
 
             with self.assertRaises(ValueError):
                 hg.parse('.', name='.hg_archival.txt', **{'mercurial.tag': r'__scmver__'})

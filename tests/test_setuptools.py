@@ -34,9 +34,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
                 repo: {node}
                 node: {node}
                 branch: default
-                latesttag: {tag}
-                latesttagdistance: 0
-                changessincelatesttag: 0
+                tag: {tag}
             """.format(node=self._rev, tag=tag)))
             fp.flush()
 

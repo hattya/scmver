@@ -177,15 +177,13 @@ class CoreTestCase(SCMVerTestCase):
                 for m in parse:
                     m.parse = parse[m]
 
-            info = core.SCMInfo(distance=1, revision=rev, branch='default')
+            info = core.SCMInfo('v1.0', revision=rev, branch='default')
             with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
                 fp.write(textwrap.dedent("""\
                     repo: {0.revision}
                     node: {0.revision}
                     branch: {0.branch}
-                    latesttag: null
-                    latesttagdistance: {0.distance}
-                    changessincelatesttag: {0.distance}
+                    tag: {0.tag}
                 """.format(info)))
                 fp.flush()
             self.assertEqual(core.stat(path, **kwargs), info)
@@ -204,15 +202,13 @@ class CoreTestCase(SCMVerTestCase):
                 try:
                     self.assertIsNone(core.stat(path))
 
-                    info = core.SCMInfo(distance=1, revision=rev, branch='default')
+                    info = core.SCMInfo('v1.0', revision=rev, branch='default')
                     with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
                         fp.write(textwrap.dedent("""\
                             repo: {0.revision}
                             node: {0.revision}
                             branch: {0.branch}
-                            latesttag: null
-                            latesttagdistance: {0.distance}
-                            changessincelatesttag: {0.distance}
+                            tag: {0.tag}
                         """.format(info)))
                         fp.flush()
                     self.assertEqual(core.stat(path), info)

@@ -65,11 +65,11 @@ def parse(root, name='.hg', **kwargs):
             # NOTE: tags should also be encoded in UTF-8, but they are
             # encoded in the local encoding...
             with io.open(p, encoding='utf-8') as fp:
-                meta = {'latesttag': []}
+                meta = {'tag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
-                    if k == 'latesttag':
-                        meta[k].append(v)
+                    if k in ('tag', 'latesttag'):
+                        meta['tag'].append(v)
                     else:
                         meta[k] = v
         except (OSError, IOError):
@@ -77,15 +77,15 @@ def parse(root, name='.hg', **kwargs):
         else:
             if _TAG in kwargs:
                 tag_re = re.compile(kwargs[_TAG])
-                for tag in meta['latesttag']:
+                for tag in meta['tag']:
                     if (tag != 'null'
                         and tag_re.match(tag)):
                         break
                 else:
                     raise ValueError('no such tag')
             else:
-                tag = meta['latesttag'][0]
-            return core.SCMInfo(_tag_of(tag), int(meta.get('changessincelatesttag', meta['latesttagdistance'])), meta['node'], False, meta['branch'])
+                tag = meta['tag'][0]
+            return core.SCMInfo(_tag_of(tag), int(meta.get('changessincelatesttag', 0)), meta['node'], False, meta['branch'])
 
 
 def _tag_of(tag):
