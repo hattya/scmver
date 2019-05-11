@@ -142,6 +142,44 @@ class SubversionTestCase(SCMVerTestCase):
                 self.switch(path)
                 self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(u'\u30bf\u30b0', 0, 3, False, branch))
 
+    def test_monorepo(self):
+        self.create('repo')
+        self.checkout('repo', 'wc')
+        for proj in ('spam', 'eggs', 'ham'):
+            svn.run('mkdir', proj)
+            svn.run('mkdir', os.path.join(proj, 'trunk'), os.path.join(proj, 'branches'), os.path.join(proj, 'tags'))
+        svn.run('commit', '-m', '_')
+        for proj in ('spam', 'eggs', 'ham'):
+            svn.run('copy', os.path.join(proj, 'trunk'), os.path.join(proj, 'branches', '1.x'))
+        svn.run('commit', '-m', '_')
+        for i in range(3):
+            for proj in ('spam', 'eggs', 'ham')[i:]:
+                svn.run('copy', os.path.join(proj, 'branches', '1.x'), os.path.join(proj, 'tags', '1.{}'.format(i)))
+            svn.run('commit', '-m', '_')
+
+        for proj, tag, revision in (
+            ('spam', '1.0', 3),
+            ('eggs', '1.1', 4),
+            ('ham', '1.2', 5),
+        ):
+            kwargs = {
+                'subversion.trunk': os.path.join(proj, 'trunk'),
+                'subversion.branches': os.path.join(proj, 'branches'),
+                'subversion.tags': os.path.join(proj, 'tags'),
+            }
+            for path, distance, branch in (
+                ('', revision, None),
+                ('trunk', 1, 'trunk'),
+                ('branches', 2, None),
+                ('branches/1.x', 2, '1.x'),
+                ('tags', revision - 1, None),
+                ('tags/' + tag, 3, None),
+            ):
+                with self.subTest(proj=proj, path=path, tag=tag):
+                    self.switch(proj + '/' + path)
+                    self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=distance, revision=5))
+                    self.assertEqual(svn.parse('.', name='.svn', **kwargs), core.SCMInfo(tag, 0, 5, False, branch))
+
     def test_status(self):
         self.create('repo')
         self.checkout('repo', 'wc')

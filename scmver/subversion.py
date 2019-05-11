@@ -76,7 +76,10 @@ def parse(root, name='.svn', **kwargs):
         r = revision
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
         while r > 0:
-            out = run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0]
+            try:
+                out = run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0]
+            except SyntaxError:
+                break
             for e in out.iterfind('./logentry'):
                 r = int(e.get('revision'))
                 for p in e.iterfind('.//path[@kind="dir"]'):

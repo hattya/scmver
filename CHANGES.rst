@@ -15,6 +15,7 @@ Version 0.4
 * Add support for Unicode branches and tags.
 * Add support for Fossil.
 * Improve support for ``.hg_archival.txt`` of Mercurial.
+* Make tag detection of Subversion more robust.
 
 
 Version 0.3
