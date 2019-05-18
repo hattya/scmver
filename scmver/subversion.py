@@ -32,25 +32,32 @@ _version_re = re.compile(r"""
     (?P<release>
         [0-9]+ (?:\. [0-9]+)+
     )
+    # number tag
+    (?:
+        (?:
+            -
+            (?P<pre_s>
+                alpha |
+                beta  |
+                rc
+            )
+            (?P<pre_n>[0-9]+)
+        ) |
+        (?:
+            - dev |
+            \+
+        )
+    )?
+    (?:
+        # sliksvn
+        - SlikSvn .*?
+    )?
     # version tag
     \s+
     \(
-        (?:
-            # pre-release
-            (?:
-                (?P<pre_s>
-                    Alpha                 |
-                    Beta                  |
-                    Release \s+ Candidate
-                )
-                \s*
-                (?P<pre_n>[0-9]+)
-            ) |
-            # final release
-            r [0-9]+
-        )
+        (?P<tag>.+)
     \)
-""", re.IGNORECASE | re.VERBOSE)
+""", re.VERBOSE)
 
 
 def parse(root, name='.svn', **kwargs):
@@ -146,8 +153,10 @@ def version():
 
     v = tuple(map(int, m.group('release').split('.')))
     if m.group('pre_s'):
-        s = m.group('pre_s').lower()
-        v += ('rc' if s == 'release candidate' else s[0], int(m.group('pre_n')))
+        s = m.group('pre_s')
+        v += (s[0] if s != 'rc' else s, int(m.group('pre_n')))
+    elif m.group('tag') in ('under development', 'dev build'):
+        v += ('dev',)
     return v
 
 
