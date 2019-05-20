@@ -74,13 +74,13 @@ def parse(root, name='.fslckout', **kwargs):
         # NOTE: "-n 0" does not work with <= 1.36
         distance = 0
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
-        for l in run('timeline', 'parents', 'current', '-n', str(0x7fff), '-t', 'ci', '-W', '0')[0].splitlines():
+        for l in run('timeline', 'parents', 'current', '-n', str(0x7fff), '-t', 'ci', '-W', '0', cwd=root)[0].splitlines():
             m = _timeline_re.match(l)
             if not m:
                 continue
             elif (m.group('tags')
                   and len(m.group('tags').split(',')) > 1):
-                for tag in run('tag', 'list', m.group('check_in'))[0].splitlines():
+                for tag in run('tag', 'list', m.group('check_in'), cwd=root)[0].splitlines():
                     if (tag != branch
                         and (not tag_re
                              or tag_re.match(tag))):
