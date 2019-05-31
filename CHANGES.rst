@@ -4,6 +4,8 @@ scmver Changelog
 Version 0.4
 -----------
 
+Release date: 2019-05-31
+
 * Add functions to retrieve versions of VCSes.
 
   * ``bazaar.version``
