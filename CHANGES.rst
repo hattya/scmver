@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.0
+-----------
+
+* Drop Python 3.4 support.
+
+
 Version 0.4
 -----------
 
