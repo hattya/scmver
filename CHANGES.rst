@@ -5,6 +5,7 @@ Version 1.0
 -----------
 
 * Drop Python 3.4 support.
+* Support Python 3.8.
 
 
 Version 0.4
