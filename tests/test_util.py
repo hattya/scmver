@@ -15,6 +15,14 @@ from base import SCMVerTestCase
 class UtilTestCase(SCMVerTestCase):
 
     def test_exec(self):
+        def version_of(s):
+            v = s.split('.')[:3]
+            for i, c in enumerate(v[2]):
+                if not c.isdigit():
+                    v[2] = v[2][:i]
+                    break
+            return '.'.join(v)
+
         for args in (
             (sys.executable, r'-V'),
             (sys.executable, u'-V'),
@@ -24,9 +32,9 @@ class UtilTestCase(SCMVerTestCase):
                 ver = 'Python {}.{}.{}'.format(*sys.version_info)
                 if sys.version_info[0] == 2:
                     self.assertEqual(out, '')
-                    self.assertEqual(err.strip(), ver)
+                    self.assertEqual(version_of(err), ver)
                 else:
-                    self.assertEqual(out.strip(), ver)
+                    self.assertEqual(version_of(out), ver)
                     self.assertEqual(err, '')
 
         cmd = 'import sys; getattr(sys.stdout, "buffer", sys.stdout).write(u"\\U0001d70b = 3.14".encode("utf-8"))'
