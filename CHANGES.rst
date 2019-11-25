@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.0
 -----------
 
+Release date: 2019-11-25
+
 * Drop Python 3.4 support.
 * Support Python 3.8.
 
