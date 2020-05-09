@@ -1,7 +1,7 @@
 #
 # test_cli
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -246,7 +246,7 @@ class CLITestCase(SCMVerTestCase):
 
 
 @unittest.skipUnless(click, 'requires click')
-class GroupTestCase(unittest.TestCase):
+class GroupTestCase(SCMVerTestCase):
 
     def group(self):
         return click.group(cls=cli._Group)
@@ -283,10 +283,10 @@ class GroupTestCase(unittest.TestCase):
         rv = self.invoke(['c'])
         self.assertIsNotNone(rv.exception)
         self.assertEqual(rv.exit_code, 2)
-        self.assertEqual(rv.output.splitlines()[-1], 'Error: command "c" is ambiguous: checkout commit')
+        self.assertRegex(rv.output.splitlines()[-1], r'^Error: command .c. is ambiguous: checkout commit$')
 
     def test_unknown(self):
         rv = self.invoke(['clone'])
         self.assertIsNotNone(rv.exception)
         self.assertEqual(rv.exit_code, 2)
-        self.assertEqual(rv.output.splitlines()[-1], 'Error: No such command "clone".')
+        self.assertRegex(rv.output.splitlines()[-1], r'^Error: No such command .clone.\.$')

@@ -91,7 +91,7 @@ setup(name='scmver',
       cmdclass=cmdclass,
       tests_require=tests_require,
       extras_require={
-          'cli': ['click'],
+          'cli': ['click < 7.1; python_version <= "2.7"', 'click; python_version > "2.7"'],
           'test': tests_require,
       },
       entry_points={
