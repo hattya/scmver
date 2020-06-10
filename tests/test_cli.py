@@ -211,7 +211,7 @@ class CLITestCase(SCMVerTestCase):
             Distance: 0
             Dirty:    False
             Branch:   HEAD
-        """.format(rev)))
+        """))
 
         core.stat = lambda *a, **kw: core.SCMInfo('0.0', 1, rev, False, 'master')
         rv = self.invoke(['stat'])

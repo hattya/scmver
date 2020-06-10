@@ -1,7 +1,7 @@
 #
 # test_fossil
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -153,7 +153,7 @@ class FossilTestCase(SCMVerTestCase):
         self.assertEqual(info.branch, 'spam')
 
     def test_version(self):
-        self.assertEqual(len(fsl.version()), 2)
+        self.assertGreaterEqual(len(fsl.version()), 2)
 
         run = fsl.run
         try:
