@@ -1,7 +1,7 @@
 #
 # test_bazaar
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -14,7 +14,7 @@ from scmver import core, bazaar as bzr, util
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(util.which('bzr'), 'requires Bazaar')
+@unittest.skipUnless(util.which('bzr') or util.which('brz'), 'requires Bazaar or Breezy')
 class BazaarTestCase(SCMVerTestCase):
 
     def setUp(self):
@@ -29,7 +29,7 @@ class BazaarTestCase(SCMVerTestCase):
         self.rmtree(self._root)
 
     def init(self):
-        bzr.run('init-repository', self._root)
+        bzr.run('init-repo', self._root)
         bzr.run('init', self.branch)
         os.chdir(self.branch)
         bzr.run('whoami', '--branch', 'scmver <scmver@example.com>')
@@ -101,6 +101,11 @@ class BazaarTestCase(SCMVerTestCase):
 
         run = bzr.run
         try:
+            # Breezy
+            brz = textwrap.dedent("""\
+                Breezy (brz) {}
+                  ...
+            """)
             # >= 0.10 (revision 1819.1.5)
             new = textwrap.dedent("""\
                 Bazaar (bzr) {}
@@ -112,6 +117,10 @@ class BazaarTestCase(SCMVerTestCase):
                   ...
             """)
             for out, e in (
+                (brz.format('3.1.0'), (3, 1, 0)),
+                (brz.format('3.1a1'), (3, 1, 0, 'a', 1)),
+                (brz.format('3.0b1'), (3, 0, 0, 'b', 1)),
+                (brz.format('3.0.0dev1'), (3, 0, 0, 'dev', 1)),
                 (new.format('2.1.0'), (2, 1, 0)),
                 (new.format('2.1.0rc2'), (2, 1, 0, 'rc', 2)),
                 (new.format('2.1.0b4'), (2, 1, 0, 'b', 4)),

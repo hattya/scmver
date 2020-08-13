@@ -1,7 +1,7 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -17,7 +17,7 @@ _TAG = 'bazaar.tag'
 
 _version_re = re.compile(r"""
     \A
-    (?:Bazaar \s+ \(bzr\) | bzr \s+ \(bazaar-ng\)) \s+
+    (?:Breezy \s+ \(brz\) | Bazaar \s+ \(bzr\) | bzr \s+ \(bazaar-ng\)) \s+
     # version number
     (?P<release>
         [0-9]+ (?:\. [0-9]+)+
@@ -26,6 +26,7 @@ _version_re = re.compile(r"""
     (?:
         (?:
             (?P<pre_s>
+                a  |
                 b  | beta |
                 rc
             )
@@ -97,4 +98,4 @@ def version():
 
 
 def run(*args, **kwargs):
-    return util.exec_((util.which('bzr'),) + args, **kwargs)
+    return util.exec_((util.which('brz') or util.which('bzr'),) + args, **kwargs)

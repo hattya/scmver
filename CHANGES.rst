@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.1
+-----------
+
+* Add support for Breezy.
+
+
 Version 1.0
 -----------
 
