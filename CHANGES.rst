@@ -5,6 +5,7 @@ Version 1.1
 -----------
 
 * Add support for Breezy.
+* Drop Python 3.5 support.
 
 
 Version 1.0

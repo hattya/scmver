@@ -30,7 +30,7 @@ Installation
 Requiements
 -----------
 
-- Python 2.7 or 3.5+
+- Python 2.7 or 3.6+
 - setuptools
 
 
