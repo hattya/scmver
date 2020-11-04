@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.1
 -----------
 
+Release date: 2020-11-04
+
 * Add support for Breezy.
 * Drop Python 3.5 support.
 * Support Python 3.9.
