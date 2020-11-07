@@ -10,7 +10,7 @@ or to generate a file which contains the version.
    :target: https://pypi.org/project/scmver
 
 .. image:: https://github.com/hattya/scmver/workflows/CI/badge.svg
-   :target: https://github.com/hattya/scmver/actions?query=workflow:CI    
+   :target: https://github.com/hattya/scmver/actions?query=workflow:CI
 
 .. image:: https://semaphoreci.com/api/v1/hattya/scmver/branches/master/badge.svg
    :target: https://semaphoreci.com/hattya/scmver
