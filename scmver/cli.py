@@ -1,7 +1,7 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -39,20 +39,19 @@ class _Local(click.ParamType):
     CO_VARARGS = 0x0004
 
     def convert(self, value, param, ctx):
+        m = {}
         try:
-            m = {}
             exec(value, {}, m)
         except (NameError, SyntaxError):
             return value
-        else:
-            for v in five.values(m):
-                if callable(v):
-                    if (v.__code__.co_argcount < 1
-                        and not v.__code__.co_flags & self.CO_VARARGS):
-                        self.fail('"{}" does not have arguments.'.format(v), param, ctx)
-                    return v
-            else:
-                self.fail('Callable object does not found.', param, ctx)
+
+        for v in five.values(m):
+            if callable(v):
+                if (v.__code__.co_argcount < 1
+                    and not v.__code__.co_flags & self.CO_VARARGS):
+                    self.fail('"{}" does not have arguments.'.format(v), param, ctx)
+                return v
+        self.fail('Callable object does not found.', param, ctx)
 
 
 class _Regex(click.ParamType):

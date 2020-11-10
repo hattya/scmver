@@ -1,7 +1,7 @@
 #
 # test_core
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -116,7 +116,6 @@ class CoreTestCase(SCMVerTestCase):
         with self.tempdir() as path:
             from scmver import bazaar as bzr, fossil as fsl, git, mercurial as hg, subversion as svn
 
-            parse = {m: m.parse for m in (bzr, git, hg, svn)}
             parse = {m: m.parse for m in (bzr, fsl, git, hg, svn)}
             try:
                 self.assertIsNone(core.stat(path))
