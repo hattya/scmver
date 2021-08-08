@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.2
+-----------
+
+* Fix tag detection with Fossil 2.16.
+
+
 Version 1.1
 -----------
 

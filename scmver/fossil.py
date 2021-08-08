@@ -1,7 +1,7 @@
 #
 # scmver.fossil
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -82,6 +82,7 @@ def parse(root, name='.fslckout', **kwargs):
                   and len(m.group('tags').split(',')) > 1):
                 for tag in run('tag', 'list', m.group('check_in'), cwd=root)[0].splitlines():
                     if (tag != branch
+                        and not tag.startswith('branch=')
                         and (not tag_re
                              or tag_re.match(tag))):
                         return core.SCMInfo(tag, distance, revision, dirty, branch)
