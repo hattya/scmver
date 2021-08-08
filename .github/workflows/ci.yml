@@ -18,6 +18,13 @@ jobs:
           - py39
           - py27-hg35
           - py27-hg36
+        exclude:
+          - platform: Windows
+            toxenv: py27
+          - platform: Windows
+            toxenv: py27-hg35
+          - platform: Windows
+            toxenv: py27-hg36
         include:
           - platform: Linux
             os: ubuntu-latest
@@ -54,9 +61,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Microsoft Visual C++ Compiler for Python 2.7
-        if: matrix.platform == 'Windows' && matrix.python-version == 2.7
-        run: choco install -y vcpython27
       - name: Install dependencies
         run: |
           python -m pip install -U pip setuptools wheel
