@@ -1,7 +1,7 @@
 #
 # scmver.core
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -13,8 +13,6 @@ import os
 import re
 import sys
 import textwrap
-
-from . import _compat as five
 
 
 __all__ = ['generate', 'get_version', 'load_version', 'next_version', 'stat',
@@ -89,7 +87,7 @@ def generate(path, version, info=None, template=_TEMPLATE):
         fp.write(template.format(**kwargs))
 
 
-def get_version(root=u'.', **kwargs):
+def get_version(root='.', **kwargs):
     def take(d, *keys):
         return {k: d[k] for k in d if k in keys}
 
@@ -105,7 +103,7 @@ def get_version(root=u'.', **kwargs):
         if callable(fallback):
             return fallback()
         else:
-            if isinstance(fallback, five.basestring):
+            if isinstance(fallback, str):
                 spec = fallback
                 path = None
             else:

@@ -1,7 +1,7 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,6 @@ import re
 
 import click
 
-from . import _compat as five
 from . import __version__, core
 
 
@@ -29,7 +28,7 @@ class _Group(click.Group):
             return m[name]
         elif len(m) > 1:
             ctx.fail('command "{}" is ambiguous: {}'.format(name, ' '.join(sorted(m))))
-        for cmd in five.values(m):
+        for cmd in m.values():
             return cmd
 
 
@@ -45,7 +44,7 @@ class _Local(click.ParamType):
         except (NameError, SyntaxError):
             return value
 
-        for v in five.values(m):
+        for v in m.values():
             if callable(v):
                 if (v.__code__.co_argcount < 1
                     and not v.__code__.co_flags & self.CO_VARARGS):
@@ -184,13 +183,13 @@ def stat(**opts):
         return
 
     if info.tag != '0.0':
-        click.echo(u'Tag:      {.tag}'.format(info))
+        click.echo('Tag:      {.tag}'.format(info))
     click.echo('Distance: {.distance}'.format(info))
     if info.revision:
         click.echo('Revision: {.revision}'.format(info))
     click.echo('Dirty:    {.dirty}'.format(info))
     if info.branch:
-        click.echo(u'Branch:   {.branch}'.format(info))
+        click.echo('Branch:   {.branch}'.format(info))
 
 
 def _next_version(info, **opts):

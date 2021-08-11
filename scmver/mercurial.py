@@ -1,16 +1,14 @@
 #
 # scmver.mercurial
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
-import io
 import os
 import re
 
-from . import _compat as five
 from . import core, util
 
 
@@ -35,9 +33,6 @@ _version_re = re.compile(r"""
     )?
     (?:[+)] | \Z)
 """, re.VERBOSE)
-
-if five.PY2:
-    bytes = bytearray
 
 
 def parse(root, name='.hg', **kwargs):
@@ -64,7 +59,7 @@ def parse(root, name='.hg', **kwargs):
         try:
             # NOTE: tags should also be encoded in UTF-8, but they are
             # encoded in the local encoding...
-            with io.open(p, encoding='utf-8') as fp:
+            with open(p, encoding='utf-8') as fp:
                 meta = {'tag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
@@ -72,7 +67,7 @@ def parse(root, name='.hg', **kwargs):
                         meta['tag'].append(v)
                     else:
                         meta[k] = v
-        except (OSError, IOError):
+        except OSError:
             pass
         else:
             if _TAG in kwargs:

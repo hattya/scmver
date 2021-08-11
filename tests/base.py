@@ -1,7 +1,7 @@
 #
 # base
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -18,8 +18,6 @@ try:
 except ImportError:
     import unittest
 
-from scmver import _compat as five
-
 
 __all__ = ['SCMVerTestCase']
 
@@ -34,9 +32,6 @@ class SCMVerTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         locale.setlocale(locale.LC_ALL, cls._lc)
-
-    if five.PY2:
-        assertRegex = unittest.TestCase.assertRegexpMatches
 
     def check_locale(self):
         encoding = locale.getpreferredencoding(False)

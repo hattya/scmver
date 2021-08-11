@@ -25,11 +25,7 @@ class test(Command):
         pass
 
     def run(self):
-        self.distribution.fetch_build_eggs(self.distribution.tests_require)
-        try:
-            import unittest2 as unittest
-        except ImportError:
-            import unittest
+        import unittest
 
         self.run_command('egg_info')
         # run unittest discover
@@ -44,7 +40,7 @@ class test(Command):
 try:
     with open('README.rst') as fp:
         long_description = fp.read()
-except (OSError, IOError):
+except OSError:
     long_description = ''
 
 packages = ['scmver']
@@ -53,8 +49,6 @@ package_data = {}
 cmdclass = {
     'test': test,
 }
-
-tests_require = ['unittest2; python_version <= "2.7"']
 
 setup(name='scmver',
       version=scmver.get_version(**{
@@ -76,8 +70,6 @@ setup(name='scmver',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
@@ -89,10 +81,8 @@ setup(name='scmver',
           'Topic :: Utilities',
       ],
       cmdclass=cmdclass,
-      tests_require=tests_require,
       extras_require={
-          'cli': ['click < 7.1; python_version <= "2.7"', 'click; python_version > "2.7"'],
-          'test': tests_require,
+          'cli': ['click'],
       },
       entry_points={
           'console_scripts': [

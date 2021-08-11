@@ -11,20 +11,10 @@ jobs:
           - macOS
           - Windows
         toxenv:
-          - py27
           - py36
           - py37
           - py38
           - py39
-          - py27-hg35
-          - py27-hg36
-        exclude:
-          - platform: Windows
-            toxenv: py27
-          - platform: Windows
-            toxenv: py27-hg35
-          - platform: Windows
-            toxenv: py27-hg36
         include:
           - platform: Linux
             os: ubuntu-latest
@@ -32,8 +22,6 @@ jobs:
             os: macos-latest
           - platform: Windows
             os: windows-latest
-          - toxenv: py27
-            python-version: 2.7
           - toxenv: py36
             python-version: 3.6
           - toxenv: py37
@@ -42,10 +30,6 @@ jobs:
             python-version: 3.8
           - toxenv: py39
             python-version: 3.9
-          - toxenv: py27-hg35
-            python-version: 2.7
-          - toxenv: py27-hg36
-            python-version: 2.7
       fail-fast: false
     name: tox -e ${{ matrix.toxenv }} on ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}

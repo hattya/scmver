@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -11,16 +11,11 @@ import os
 import subprocess
 import sys
 
-from . import _compat as five
-
 
 __all__ = ['exec_', 'which']
 
 
 def exec_(args, cwd=None, env=None, encoding=None, errors='strict'):
-    if five.PY2:
-        fs_enc = sys.getfilesystemencoding() or 'ascii'
-        args = tuple(a.encode(fs_enc, 'replace') if isinstance(a, five.unicode) else a for a in args)
     env = env.copy() if env else {}
     env['LC_MESSAGES'] = 'C'
     for k in ('LC_ALL', 'LANG', 'PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
@@ -30,7 +25,7 @@ def exec_(args, cwd=None, env=None, encoding=None, errors='strict'):
         encoding = locale.getpreferredencoding(False)
 
     if cwd:
-        path = five.getcwd()
+        path = os.getcwd()
         os.chdir(cwd)
     try:
         proc = subprocess.Popen(args,

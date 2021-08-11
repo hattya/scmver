@@ -1,7 +1,7 @@
 #
 # test_subversion
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -125,22 +125,22 @@ class SubversionTestCase(SCMVerTestCase):
         self.checkout('repo', 'wc')
         svn.run('mkdir', 'trunk', 'branches', 'tags')
         svn.run('commit', '-m', '_')
-        svn.run('copy', 'trunk', os.path.join('branches', u'\u30d6\u30e9\u30f3\u30c1'))
+        svn.run('copy', 'trunk', os.path.join('branches', '\u30d6\u30e9\u30f3\u30c1'))
         svn.run('commit', '-m', '_')
-        svn.run('copy', os.path.join('branches', u'\u30d6\u30e9\u30f3\u30c1'), os.path.join('tags', u'\u30bf\u30b0'))
+        svn.run('copy', os.path.join('branches', '\u30d6\u30e9\u30f3\u30c1'), os.path.join('tags', '\u30bf\u30b0'))
         svn.run('commit', '-m', '_')
 
         for path, branch in (
             ('', None),
             ('trunk', 'trunk'),
             ('branches', None),
-            (u'branches/\u30d6\u30e9\u30f3\u30c1', u'\u30d6\u30e9\u30f3\u30c1'),
+            ('branches/\u30d6\u30e9\u30f3\u30c1', '\u30d6\u30e9\u30f3\u30c1'),
             ('tags', None),
-            (u'tags/\u30bf\u30b0', None),
+            ('tags/\u30bf\u30b0', None),
         ):
             with self.subTest(path=path):
                 self.switch(path)
-                self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(u'\u30bf\u30b0', 0, 3, False, branch))
+                self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo('\u30bf\u30b0', 0, 3, False, branch))
 
     def test_monorepo(self):
         self.create('repo')

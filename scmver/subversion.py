@@ -1,16 +1,16 @@
 #
 # scmver.subversion
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
 import re
+import urllib.parse
 import xml.etree.cElementTree as ET
 
-from . import _compat as five
 from . import core, util
 
 
@@ -138,7 +138,7 @@ def _branch_of(info, **kwargs):
         return 'trunk'
     branches = info['Repository Root'] + _rel(_BRANCHES, 'branches', **kwargs)
     if url.startswith(branches):
-        return five.urlunquote(url[len(branches):].split('/', 1)[0])
+        return urllib.parse.unquote(url[len(branches):].split('/', 1)[0])
 
 
 def _rel(key, default, **kwargs):

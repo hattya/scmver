@@ -1,7 +1,7 @@
 #
 # test_cli
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -17,7 +17,6 @@ try:
     import click
     import click.testing
 
-    from scmver import _compat as five
     from scmver import __version__, cli, core
 except ImportError:
     click = None
@@ -41,10 +40,7 @@ class CLITestCase(SCMVerTestCase):
         out = io.BytesIO()
         stdout = sys.stdout
         try:
-            if five.PY2:
-                sys.stdout = out
-            else:
-                sys.stdout = io.TextIOWrapper(out, encoding='utf-8')
+            sys.stdout = io.TextIOWrapper(out, encoding='utf-8')
             cli.run(['--version'])
         except SystemExit as e:
             self.assertEqual(e.code, 0)

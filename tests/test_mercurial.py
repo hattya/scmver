@@ -1,7 +1,7 @@
 #
 # test_mercurial
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -186,29 +186,29 @@ class MercurialTestCase(SCMVerTestCase):
         self.check_locale()
 
         self.init()
-        hg.run('branch', u'\u30d6\u30e9\u30f3\u30c1')
-        self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+        hg.run('branch', '\u30d6\u30e9\u30f3\u30c1')
+        self.touch('\u30d5\u30a1\u30a4\u30eb')
         hg.run('add', '.')
         hg.run('commit', '-m', '.')
-        hg.run('tag', u'\u30bf\u30b0')
+        hg.run('tag', '\u30bf\u30b0')
 
         info = hg.parse('.', name='.hg')
         if self.version < (3, 6):
             self.assertIsNone(info)
         else:
-            self.assertEqual(info.tag, u'\u30bf\u30b0')
+            self.assertEqual(info.tag, '\u30bf\u30b0')
             self.assertEqual(info.distance, 1)
             self.assertIsNotNone(info.revision)
             self.assertFalse(info.dirty)
-            self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
+            self.assertEqual(info.branch, '\u30d6\u30e9\u30f3\u30c1')
 
         with self.archive():
             info = hg.parse('.', name='.hg_archival.txt')
-            self.assertEqual(info.tag, u'\u30bf\u30b0')
+            self.assertEqual(info.tag, '\u30bf\u30b0')
             self.assertEqual(info.distance, 1)
             self.assertIsNotNone(info.revision)
             self.assertFalse(info.dirty)
-            self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
+            self.assertEqual(info.branch, '\u30d6\u30e9\u30f3\u30c1')
 
     def test_version(self):
         self.assertGreaterEqual(len(hg.version()), 3)

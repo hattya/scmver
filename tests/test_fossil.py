@@ -1,7 +1,7 @@
 #
 # test_fossil
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -106,17 +106,17 @@ class FossilTestCase(SCMVerTestCase):
         self.check_locale()
 
         self.init()
-        self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+        self.touch('\u30d5\u30a1\u30a4\u30eb')
         fsl.run('add', '.')
-        fsl.run('commit', '--branch', u'\u30d6\u30e9\u30f3\u30c1', '-m', '.')
-        fsl.run('tag', 'add', u'\u30bf\u30b0', 'current')
+        fsl.run('commit', '--branch', '\u30d6\u30e9\u30f3\u30c1', '-m', '.')
+        fsl.run('tag', 'add', '\u30bf\u30b0', 'current')
 
         info = fsl.parse('.', name='_FOSSIL_')
-        self.assertEqual(info.tag, u'\u30bf\u30b0')
+        self.assertEqual(info.tag, '\u30bf\u30b0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
         self.assertFalse(info.dirty)
-        self.assertEqual(info.branch, u'\u30d6\u30e9\u30f3\u30c1')
+        self.assertEqual(info.branch, '\u30d6\u30e9\u30f3\u30c1')
 
     def test_status(self):
         self.init()

@@ -1,7 +1,7 @@
 #
 # test_bazaar
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -84,15 +84,15 @@ class BazaarTestCase(SCMVerTestCase):
         self.check_locale()
 
         branch = self.branch
-        self.branch = os.path.join(os.path.dirname(self.branch), u'\u30d6\u30e9\u30f3\u30c1')
+        self.branch = os.path.join(os.path.dirname(self.branch), '\u30d6\u30e9\u30f3\u30c1')
         try:
             self.init()
-            self.touch(u'\u30d5\u30a1\u30a4\u30eb')
+            self.touch('\u30d5\u30a1\u30a4\u30eb')
             bzr.run('add', '.')
             bzr.run('commit', '-m', '_')
-            bzr.run('tag', u'\u30bf\u30b0')
+            bzr.run('tag', '\u30bf\u30b0')
 
-            self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(u'\u30bf\u30b0', 0, '1', False, u'\u30d6\u30e9\u30f3\u30c1'))
+            self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo('\u30bf\u30b0', 0, '1', False, '\u30d6\u30e9\u30f3\u30c1'))
         finally:
             self.branch = branch
 
