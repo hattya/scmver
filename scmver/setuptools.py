@@ -1,10 +1,14 @@
 #
 # scmver.setuptools
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
+
+from typing import Any
+
+import setuptools
 
 from . import core
 
@@ -12,7 +16,7 @@ from . import core
 __all__ = ['scmver']
 
 
-def scmver(dist, key, value):
+def scmver(dist: setuptools.Distribution, key: str, value: Any) -> None:
     if not value:
         return
     elif value is True:

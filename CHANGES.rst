@@ -6,6 +6,7 @@ Version 1.2
 
 * Fix tag detection with Fossil 2.16.
 * Drop Python 2.7 support.
+* Add type annotations.
 
 
 Version 1.1

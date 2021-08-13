@@ -44,7 +44,9 @@ except OSError:
     long_description = ''
 
 packages = ['scmver']
-package_data = {}
+package_data = {
+    'scmver': ['py.typed'],
+}
 
 cmdclass = {
     'test': test,

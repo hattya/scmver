@@ -1,13 +1,14 @@
 #
 # scmver.git
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import re
 import sys
+from typing import Any, Optional, Sequence, Tuple, Union
 
 from . import core, util
 
@@ -37,14 +38,14 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root, name='.git', **kwargs):
+def parse(root: str, name: Optional[str] = '.git', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.git':
         args = ['describe', '--dirty=+', '--tags', '--abbrev=40', '--long', '--always']
         if _TAG in kwargs:
             args += ('--match', kwargs[_TAG])
         out = run(*args, cwd=root)[0].strip().rsplit('-', 2)
 
-        branch = run('rev-parse', '--abbrev-ref', 'HEAD', cwd=root)[0].strip()
+        branch: Optional[str] = run('rev-parse', '--abbrev-ref', 'HEAD', cwd=root)[0].strip()
         if branch == 'HEAD':
             branch = run('symbolic-ref', '--short', 'HEAD', cwd=root)[0].strip() or None
 
@@ -58,9 +59,10 @@ def parse(root, name='.git', **kwargs):
         elif branch:
             return core.SCMInfo(dirty=any(l for l in run('status', '--porcelain', cwd=root)[0].splitlines() if l[0] != '?'),
                                 branch=branch)
+    return None
 
 
-def version():
+def version() -> Tuple[Union[int, str], ...]:
     m = _version_re.match(run('--version')[0].strip())
     if not m:
         return ()
@@ -77,7 +79,7 @@ def version():
     return v
 
 
-def run(*args, **kwargs):
+def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
     if sys.platform == 'win32':
         kwargs['encoding'] = 'utf-8'
     return util.exec_((util.which('git'), '-c', 'core.quotepath=false') + args, **kwargs)

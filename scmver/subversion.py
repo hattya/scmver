@@ -8,6 +8,7 @@
 
 import os
 import re
+from typing import cast, Any, Dict, Mapping, Optional, Sequence, Tuple, Union
 import urllib.parse
 import xml.etree.cElementTree as ET
 
@@ -60,16 +61,16 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root, name='.svn', **kwargs):
+def parse(root: str, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.svn':
         info = _info(root)
         if not _is_wc_root(root, info):
-            return
+            return None
 
         revision = int(info.get('Revision', 0))
         branch = _branch_of(info, **kwargs)
 
-        out = run('status', '--xml', cwd=root)[0]
+        out = cast(ET.Element, run('status', '--xml', cwd=root)[0])
         for e in out.iterfind('.//wc-status'):
             if (e.get('item') in _MODIFIED
                 or e.get('props') in _MODIFIED):
@@ -84,12 +85,13 @@ def parse(root, name='.svn', **kwargs):
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
         while r > 0:
             try:
-                out = run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0]
+                out = cast(ET.Element, run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0])
             except SyntaxError:
                 break
             for e in out.iterfind('./logentry'):
-                r = int(e.get('revision'))
+                r = int(cast(str, e.get('revision')))
                 for p in e.iterfind('.//path[@kind="dir"]'):
+                    p.text = cast(str, p.text)
                     if not p.text.startswith(tags):
                         continue
                     tag = p.text[len(tags):].split('/', 1)[0]
@@ -101,14 +103,15 @@ def parse(root, name='.svn', **kwargs):
                             revision=revision,
                             dirty=dirty,
                             branch=branch)
+    return None
 
 
-def _info(root):
-    out = run('info', cwd=root)[0].strip().splitlines()
-    return dict((s.strip() for s in l.split(':', 1)) for l in out)
+def _info(root: str) -> Dict[str, str]:
+    out = cast(str, run('info', cwd=root)[0]).strip().splitlines()
+    return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _is_wc_root(root, info):
+def _is_wc_root(root: str, info: Mapping[str, str]) -> bool:
     root = os.path.normpath(os.path.abspath(root))
     if os.path.normcase(root) == os.path.normcase(info.get('Working Copy Root Path', '')):
         return True
@@ -120,17 +123,17 @@ def _is_wc_root(root, info):
     return False
 
 
-def _distance_of(root, info, rev):
+def _distance_of(root: str, info: Mapping[str, str], rev: Union[int, str]) -> int:
     rev = str(rev)
     i = 0
-    out = run('log', '-r', '{}:{}'.format(info.get('Revision', 'BASE'), rev), '--xml', cwd=root)[0]
+    out = cast(ET.Element, run('log', '-r', '{}:{}'.format(info.get('Revision', 'BASE'), rev), '--xml', cwd=root)[0])
     for e in out.iterfind('./logentry'):
         if e.get('revision') != rev:
             i += 1
     return i
 
 
-def _branch_of(info, **kwargs):
+def _branch_of(info: Mapping[str, str], **kwargs: str) -> Optional[str]:
     url = info['URL']
     trunk = info['Repository Root'] + _rel(_TRUNK, 'trunk', **kwargs)
     if (url == trunk[:-1]
@@ -139,14 +142,15 @@ def _branch_of(info, **kwargs):
     branches = info['Repository Root'] + _rel(_BRANCHES, 'branches', **kwargs)
     if url.startswith(branches):
         return urllib.parse.unquote(url[len(branches):].split('/', 1)[0])
+    return None
 
 
-def _rel(key, default, **kwargs):
+def _rel(key: str, default: str, **kwargs: str) -> str:
     return '/' + os.path.normpath(kwargs.get(key, default)).replace(os.sep, '/').strip('/') + '/'
 
 
-def version():
-    out = run('--version')[0].splitlines()
+def version() -> Tuple[Union[int, str], ...]:
+    out = cast(str, run('--version')[0]).splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
@@ -160,7 +164,7 @@ def version():
     return v
 
 
-def run(*args, **kwargs):
+def run(*args: Sequence[str], **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
     xml = '--xml' in args
     if xml:
         kwargs['encoding'] = 'utf-8'

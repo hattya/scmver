@@ -9,6 +9,7 @@
 import os
 import re
 import sys
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from . import core, util
 
@@ -17,7 +18,7 @@ __all__ = ['parse', 'version', 'run']
 
 _TAG = 'fossil.tag'
 # environ
-_env = ('FOSSIL_HOME', 'FOSSIL_USER', 'SQLITE_TMPDIR', 'USER', 'LOGNAME', 'USERNAME', 'TMPDIR')
+_env: Tuple[str, ...] = ('FOSSIL_HOME', 'FOSSIL_USER', 'SQLITE_TMPDIR', 'USER', 'LOGNAME', 'USERNAME', 'TMPDIR')
 if sys.platform == 'win32':
     _env += ('LOCALAPPDATA', 'APPDATA', 'HOMEDRIVE', 'HOMEPATH', 'TMP', 'TEMP', 'USERPROFILE')
 else:
@@ -61,11 +62,11 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root, name='.fslckout', **kwargs):
+def parse(root: str, name: Optional[str] = '.fslckout', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name in ('.fslckout', '_FOSSIL_'):
         info, changes = _status(root)
         if not info:
-            return
+            return None
 
         revision = info['checkout'].split()[0]
         dirty = bool(changes)
@@ -91,11 +92,12 @@ def parse(root, name='.fslckout', **kwargs):
                             revision=revision,
                             dirty=dirty,
                             branch=branch)
+    return None
 
 
-def _status(root):
+def _status(root: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
     info = {}
-    changes = {}
+    changes: Dict[str, List[str]] = {}
     for l in run('status', cwd=root)[0].splitlines():
         v = l.split(None, 1)
         if v[0].endswith(':'):
@@ -107,16 +109,17 @@ def _status(root):
     return info, changes
 
 
-def _branch_of(root, closed=False):
+def _branch_of(root: str, closed: bool = False) -> Optional[str]:
     args = ['branch', 'list']
     if closed:
         args += ('-c',)
     for l in run(*args, cwd=root)[0].splitlines():
         if l.startswith('* '):
             return l[2:]
+    return None
 
 
-def version():
+def version() -> Tuple[int, ...]:
     m = _version_re.match(run('version')[0].strip())
     if (not m
         or not m.group('release')):
@@ -125,7 +128,7 @@ def version():
     return tuple(map(int, m.group('release').split('.')))
 
 
-def run(*args, **kwargs):
+def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
     env = {k: os.environ[k] for k in _env if k in os.environ}
     if 'env' in kwargs:
         env.update(kwargs['env'])

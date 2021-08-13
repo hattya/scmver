@@ -1,12 +1,13 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import re
+from typing import cast, Any, Dict, Optional, Sequence, Tuple, Union
 
 from . import core, util
 
@@ -43,11 +44,11 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root, name='.bzr', **kwargs):
+def parse(root: str, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.bzr':
         info = _version_info(root)
         if not info:
-            return
+            return None
 
         dirty = info['clean'] == 'False'
 
@@ -63,14 +64,15 @@ def parse(root, name='.bzr', **kwargs):
                             revision=info['revno'],
                             dirty=dirty,
                             branch=info['branch-nick'])
+    return None
 
 
-def _version_info(root):
+def _version_info(root: str) -> Dict[str, str]:
     out = run('version-info', '--check-clean', cwd=root, encoding='utf-8')[0].splitlines()
-    return dict((s.strip() for s in l.split(':', 1)) for l in out)
+    return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _distance_of(root, rev=None):
+def _distance_of(root: str, rev: Optional[Union[int, str]] = None) -> int:
     if rev is None:
         rev = 1
         off = 0
@@ -79,7 +81,7 @@ def _distance_of(root, rev=None):
     return len(run('log', '-r', '{}..'.format(rev), '-n', '0', '--line', cwd=root)[0].splitlines()) - off
 
 
-def version():
+def version() -> Tuple[Union[int, str], ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
@@ -97,5 +99,5 @@ def version():
     return v
 
 
-def run(*args, **kwargs):
+def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
     return util.exec_((util.which('brz') or util.which('bzr'),) + args, **kwargs)

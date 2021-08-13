@@ -8,6 +8,7 @@
 
 import os
 import re
+from typing import cast, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from . import core, util
 
@@ -35,7 +36,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root, name='.hg', **kwargs):
+def parse(root: str, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.hg':
         env = {'HGENCODING': 'utf-8'}
         out = run('identify', '-ib', cwd=root, env=env, encoding='utf-8')[0].strip().split()
@@ -60,11 +61,11 @@ def parse(root, name='.hg', **kwargs):
             # NOTE: tags should also be encoded in UTF-8, but they are
             # encoded in the local encoding...
             with open(p, encoding='utf-8') as fp:
-                meta = {'tag': []}
+                meta: Dict[str, Union[str, List[str]]] = {'tag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
                     if k in ('tag', 'latesttag'):
-                        meta['tag'].append(v)
+                        cast(List[str], meta['tag']).append(v)
                     else:
                         meta[k] = v
         except OSError:
@@ -80,14 +81,15 @@ def parse(root, name='.hg', **kwargs):
                     raise ValueError('no such tag')
             else:
                 tag = meta['tag'][0]
-            return core.SCMInfo(_tag_of(tag), int(meta.get('changessincelatesttag', 0)), meta['node'], False, meta['branch'])
+            return core.SCMInfo(_tag_of(tag), int(cast(str, meta.get('changessincelatesttag', 0))), cast(str, meta['node']), False, cast(str, meta['branch']))
+    return None
 
 
-def _tag_of(tag):
+def _tag_of(tag: str) -> str:
     return tag if tag != 'null' else '0.0'
 
 
-def version():
+def version() -> Tuple[Union[int, str], ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
@@ -104,7 +106,7 @@ def version():
     return v
 
 
-def run(*args, **kwargs):
+def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
     if 'env' in kwargs:
         env = _env.copy()
         env.update(kwargs['env'])

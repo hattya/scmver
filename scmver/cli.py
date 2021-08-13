@@ -7,6 +7,7 @@
 #
 
 import re
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import click
 
@@ -15,14 +16,16 @@ from . import __version__, core
 
 __all__ = ['run']
 
+F = Callable[..., Any]
 
-def run(args=None):
+
+def run(args: Optional[Sequence[str]] = None) -> None:
     cli(args=args, prog_name=__package__)
 
 
 class _Group(click.Group):
 
-    def get_command(self, ctx, name):
+    def get_command(self, ctx: click.Context, name: str) -> Optional[click.Command]:
         m = {n: super(_Group, self).get_command(ctx, n) for n in self.list_commands(ctx) if n.startswith(name)}
         if name in m:
             return m[name]
@@ -30,6 +33,7 @@ class _Group(click.Group):
             ctx.fail('command "{}" is ambiguous: {}'.format(name, ' '.join(sorted(m))))
         for cmd in m.values():
             return cmd
+        return None
 
 
 class _Local(click.ParamType):
@@ -37,8 +41,8 @@ class _Local(click.ParamType):
     name = 'text'
     CO_VARARGS = 0x0004
 
-    def convert(self, value, param, ctx):
-        m = {}
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
+        m: Dict[str, Any] = {}
         try:
             exec(value, {}, m)
         except (NameError, SyntaxError):
@@ -57,11 +61,11 @@ class _Regex(click.ParamType):
 
     name = 'regex'
 
-    def __init__(self, group=None):
+    def __init__(self, group: Optional[Sequence[str]] = None) -> None:
         super(_Regex, self).__init__()
         self.group = group or []
 
-    def convert(self, value, param, ctx):
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
         try:
             value = re.compile(value)
         except re.error as e:
@@ -72,8 +76,8 @@ class _Regex(click.ParamType):
         return value
 
 
-def _options(options):
-    def _options(func):
+def _options(options: Sequence[F]) -> F:
+    def _options(func: F) -> F:
         for option in reversed(options):
             func = option(func)
         return func
@@ -118,9 +122,9 @@ _stat_options = (
 )
 
 
-@click.command(cls=_Group)
+@click.group(cls=_Group)
 @click.version_option(version=__version__)
-def cli():
+def cli() -> None:
     """A package version manager based on SCM tags."""
 
 
@@ -133,7 +137,7 @@ def cli():
 @click.option('-t', '--template',
               help='File template.')
 @_options(_stat_options)
-def generate(file, template, **opts):
+def generate(file: str, template: Optional[str], **opts: Any) -> None:
     """Generate a file with the version."""
 
     info = _stat('.', **opts)
@@ -151,7 +155,7 @@ def generate(file, template, **opts):
 @click.argument('spec')
 @click.option('-p', '--path',
               help='Search path for modules.')
-def load(spec, path):
+def load(spec: str, path: Optional[str]) -> None:
     """Show a value of the specified object.
 
     SPEC is in the "package.module:some.attribute" format.
@@ -163,7 +167,7 @@ def load(spec, path):
 @cli.command()
 @_options(_next_version_options)
 @_options(_stat_options)
-def next(**opts):
+def next(**opts: Any) -> None:
     """Calculate a next version from the version."""
 
     info = _stat('.', **opts)
@@ -175,7 +179,7 @@ def next(**opts):
 
 @cli.command()
 @_options(_stat_options)
-def stat(**opts):
+def stat(**opts: Any) -> None:
     """Show the working directory status."""
 
     info = _stat('.', **opts)
@@ -192,14 +196,14 @@ def stat(**opts):
         click.echo('Branch:   {.branch}'.format(info))
 
 
-def _next_version(info, **opts):
+def _next_version(info: core.SCMInfo, **opts: Any) -> Optional[str]:
     kwargs = {k: opts[k]
               for k in ('spec', 'local', 'version')
               if opts[k] is not None}
     return core.next_version(info, **kwargs)
 
 
-def _stat(path, **opts):
+def _stat(path: str, **opts: Any) -> Optional[core.SCMInfo]:
     kwargs = {k: opts[n]
               for k, n in (
                   ('bazaar.tag', 'bzr_tag'),
