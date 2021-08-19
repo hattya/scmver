@@ -115,7 +115,7 @@ spec
   Default: ``'post'``
 
 local
-  A ``string`` or ``callable obejct`` to construct the local version
+  A ``string`` or ``callable object`` to construct the local version
   identifiers.
 
   ``string``
@@ -124,7 +124,7 @@ local
     Available keywords:
 
     - ``{distance}``
-    - ``{reivison}``
+    - ``{revision}``
     - ``{branch}``
     - ``{utc}``      - Return value of ``datetime.datetime.utcnow()``
     - ``{local}``    - Return value of ``datetime.datetime.now()``
