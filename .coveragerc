@@ -2,7 +2,6 @@
 branch = True
 omit =
     */__main__.py
-    */_compat.py
 
 [report]
 exclude_lines =
