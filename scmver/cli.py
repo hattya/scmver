@@ -30,7 +30,7 @@ class _Group(click.Group):
         if name in m:
             return m[name]
         elif len(m) > 1:
-            ctx.fail('command "{}" is ambiguous: {}'.format(name, ' '.join(sorted(m))))
+            ctx.fail(f'command "{name}" is ambiguous: {" ".join(sorted(m))}')
         for cmd in m.values():
             return cmd
         return None
@@ -52,7 +52,7 @@ class _Local(click.ParamType):
             if callable(v):
                 if (v.__code__.co_argcount < 1
                     and not v.__code__.co_flags & self.CO_VARARGS):
-                    self.fail('"{}" does not have arguments.'.format(v), param, ctx)
+                    self.fail(f'"{v}" does not have arguments.', param, ctx)
                 return v
         self.fail('Callable object does not found.', param, ctx)
 
@@ -62,7 +62,7 @@ class _Regex(click.ParamType):
     name = 'regex'
 
     def __init__(self, group: Optional[Sequence[str]] = None) -> None:
-        super(_Regex, self).__init__()
+        super().__init__()
         self.group = group or []
 
     def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
@@ -72,7 +72,7 @@ class _Regex(click.ParamType):
             self.fail(str(e), param, ctx)
         for g in self.group:
             if g not in value.groupindex:
-                self.fail('Regex does not have the {} group.'.format(g), param, ctx)
+                self.fail(f'Regex does not have the {g} group.', param, ctx)
         return value
 
 
@@ -187,13 +187,13 @@ def stat(**opts: Any) -> None:
         return
 
     if info.tag != '0.0':
-        click.echo('Tag:      {.tag}'.format(info))
-    click.echo('Distance: {.distance}'.format(info))
+        click.echo(f'Tag:      {info.tag}')
+    click.echo(f'Distance: {info.distance}')
     if info.revision:
-        click.echo('Revision: {.revision}'.format(info))
-    click.echo('Dirty:    {.dirty}'.format(info))
+        click.echo(f'Revision: {info.revision}')
+    click.echo(f'Dirty:    {info.dirty}')
     if info.branch:
-        click.echo('Branch:   {.branch}'.format(info))
+        click.echo(f'Branch:   {info.branch}')
 
 
 def _next_version(info: core.SCMInfo, **opts: Any) -> Optional[str]:

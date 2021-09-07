@@ -46,7 +46,7 @@ class CLITestCase(SCMVerTestCase):
             self.assertEqual(e.code, 0)
         finally:
             sys.stdout = stdout
-        self.assertEqual(out.getvalue().decode('utf-8').strip(), 'scmver, version {}'.format(__version__))
+        self.assertEqual(out.getvalue().decode('utf-8').strip(), f'scmver, version {__version__}')
 
     def test_generate_without_repository(self):
         core.stat = lambda *a, **kw: None
@@ -78,14 +78,14 @@ class CLITestCase(SCMVerTestCase):
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0+{:%Y-%m-%d}'".format(datetime.datetime.now()))
+                self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0+{datetime.datetime.now():%Y-%m-%d}'")
 
         core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, True, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0.post+{:%Y-%m-%d}'".format(datetime.datetime.now()))
+                self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0.post+{datetime.datetime.now():%Y-%m-%d}'")
 
     def test_generate_with_template(self):
         rev = self.revision(b'scmver.cli.generate')
@@ -106,11 +106,11 @@ class CLITestCase(SCMVerTestCase):
     def test_load(self):
         rv = self.invoke(['load', 'os:name'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '{}\n'.format(os.name))
+        self.assertEqual(rv.output, f'{os.name}\n')
 
         rv = self.invoke(['load', 'os:getcwd'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '{}\n'.format(os.getcwd()))
+        self.assertEqual(rv.output, f'{os.getcwd()}\n')
 
     def test_next_without_repository(self):
         core.stat = lambda *a, **kw: None
@@ -135,12 +135,12 @@ class CLITestCase(SCMVerTestCase):
         core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '1.0+{:%Y-%m-%d}\n'.format(datetime.datetime.now()))
+        self.assertEqual(rv.output, f'1.0+{datetime.datetime.now():%Y-%m-%d}\n')
 
         core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, True, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '1.0.post+{:%Y-%m-%d}\n'.format(datetime.datetime.now()))
+        self.assertEqual(rv.output, f'1.0.post+{datetime.datetime.now():%Y-%m-%d}\n')
 
     def test_next_with_spec(self):
         rev = self.revision(b'scmver.cli.next')
@@ -156,7 +156,7 @@ class CLITestCase(SCMVerTestCase):
 
         rv = self.invoke(['next', '-l', '{local:%Y%m%d}'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '1.0+{:%Y%m%d}\n'.format(datetime.datetime.now()))
+        self.assertEqual(rv.output, f'1.0+{datetime.datetime.now():%Y%m%d}\n')
 
         rv = self.invoke(['next', '-l', 'dirty'])
         self.assertEqual(rv.exit_code, 0)
@@ -164,7 +164,7 @@ class CLITestCase(SCMVerTestCase):
 
         rv = self.invoke(['next', '-l', 'def local(info): import time; return time.strftime("%Y%m%d")'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, '1.0+{:%Y%m%d}\n'.format(datetime.datetime.now()))
+        self.assertEqual(rv.output, f'1.0+{datetime.datetime.now():%Y%m%d}\n')
 
         rv = self.invoke(['next', '-l', 'def local(): return'])
         self.assertEqual(rv.exit_code, 2)
@@ -212,33 +212,33 @@ class CLITestCase(SCMVerTestCase):
         core.stat = lambda *a, **kw: core.SCMInfo('0.0', 1, rev, False, 'master')
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, textwrap.dedent("""\
+        self.assertEqual(rv.output, textwrap.dedent(f"""\
             Distance: 1
-            Revision: {}
+            Revision: {rev}
             Dirty:    False
             Branch:   master
-        """.format(rev)))
+        """))
 
         core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, textwrap.dedent("""\
+        self.assertEqual(rv.output, textwrap.dedent(f"""\
             Tag:      v1.0
             Distance: 0
-            Revision: {}
+            Revision: {rev}
             Dirty:    True
             Branch:   master
-        """.format(rev)))
+        """))
 
         core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev)
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
-        self.assertEqual(rv.output, textwrap.dedent("""\
+        self.assertEqual(rv.output, textwrap.dedent(f"""\
             Tag:      v1.0
             Distance: 0
-            Revision: {}
+            Revision: {rev}
             Dirty:    False
-        """.format(rev)))
+        """))
 
 
 @unittest.skipUnless(click, 'requires click')

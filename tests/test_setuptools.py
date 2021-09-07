@@ -1,7 +1,7 @@
 #
 # test_setuptools
 #
-#   Copyright (c) 2019 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -30,12 +30,12 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
     def init(self, tag='v1.0'):
         with open(os.path.join(self._root, '.hg_archival.txt'), 'w') as fp:
-            fp.write(textwrap.dedent("""\
-                repo: {node}
-                node: {node}
+            fp.write(textwrap.dedent(f"""\
+                repo: {self._rev}
+                node: {self._rev}
                 branch: default
                 tag: {tag}
-            """.format(node=self._rev, tag=tag)))
+            """))
             fp.flush()
 
     def scmver(self, value):

@@ -154,7 +154,7 @@ def next_version(info: 'SCMInfo', spec: str = 'post', local: str = '{local:%Y-%m
                           local=datetime.datetime.now())
     else:
         lv = None
-    return str(pv) if not lv else '{}+{}'.format(pv, lv)
+    return str(pv) if not lv else f'{pv}+{lv}'
 
 
 def stat(path: str, **kwargs: Any) -> Optional['SCMInfo']:
@@ -194,7 +194,7 @@ class SCMInfo(NamedTuple):
     branch: Optional[str] = None
 
 
-class Version(object):
+class Version:
 
     __slots__ = ('epoch', 'release', '_pre', '_post', '_dev', 'local')
 
@@ -205,7 +205,7 @@ class Version(object):
     def __init__(self, version: str) -> None:
         m = _pep440_re.match(version.strip())
         if not m:
-            raise VersionError('invalid version: {!r}'.format(version))
+            raise VersionError(f'invalid version: {version!r}')
 
         self.epoch = int(m.group('epoch')) if m.group('epoch') else 0
         self.release = tuple(map(int, m.group('release').split('.')))
@@ -216,7 +216,7 @@ class Version(object):
         self.local = m.group('local')
 
     def __repr__(self) -> str:
-        return '<{}({})>'.format(self.__class__.__name__, self)
+        return f'<{self.__class__.__name__}({self})>'
 
     def __str__(self) -> str:
         def seg(v: ISV) -> Tuple[str, ...]:
@@ -224,7 +224,7 @@ class Version(object):
 
         buf = []
         if self.epoch != 0:
-            buf.append('{}!'.format(self.epoch))
+            buf.append(f'{self.epoch}!')
         buf.append('.'.join(map(str, self.release)))
         if self._pre:
             buf += seg(self._pre)
@@ -232,11 +232,11 @@ class Version(object):
             if self._post[1]:
                 buf += seg(self._post)
             else:
-                buf.append('-{}'.format(self._post[3]))
+                buf.append(f'-{self._post[3]}')
         if self._dev:
             buf += seg(self._dev)
         if self.local:
-            buf.append('+{}'.format(self.local))
+            buf.append(f'+{self.local}')
         return ''.join(buf)
 
     @property
@@ -306,7 +306,7 @@ class Version(object):
         elif spec in ('pre', 'dev'):
             v = getattr(self, '_' + spec)
             if not v:
-                raise VersionError('{}release segment does not exist'.format('pre-' if spec != 'dev' else 'development '))
+                raise VersionError(f'{"pre-" if spec != "dev" else "development "}release segment does not exist')
             setattr(self, '_' + spec, v[:3] + (update(v[3], value),))
         elif spec == 'post':
             if self._post:

@@ -13,10 +13,7 @@ import os
 import shutil
 import stat
 import tempfile
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import unittest
 
 
 __all__ = ['SCMVerTestCase']

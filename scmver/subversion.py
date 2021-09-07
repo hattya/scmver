@@ -85,7 +85,7 @@ def parse(root: str, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[co
         tag_re = re.compile(kwargs[_TAG]) if _TAG in kwargs else None
         while r > 0:
             try:
-                out = cast(ET.Element, run('log', '-r', '{}:0'.format(r), '-v', '--xml', '-l', '10', url, cwd=root)[0])
+                out = cast(ET.Element, run('log', '-r', f'{r}:0', '-v', '--xml', '-l', '10', url, cwd=root)[0])
             except SyntaxError:
                 break
             for e in out.iterfind('./logentry'):
@@ -126,7 +126,7 @@ def _is_wc_root(root: str, info: Mapping[str, str]) -> bool:
 def _distance_of(root: str, info: Mapping[str, str], rev: Union[int, str]) -> int:
     rev = str(rev)
     i = 0
-    out = cast(ET.Element, run('log', '-r', '{}:{}'.format(info.get('Revision', 'BASE'), rev), '--xml', cwd=root)[0])
+    out = cast(ET.Element, run('log', '-r', f'{info.get("Revision", "BASE")}:{rev}', '--xml', cwd=root)[0])
     for e in out.iterfind('./logentry'):
         if e.get('revision') != rev:
             i += 1

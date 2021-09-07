@@ -32,7 +32,7 @@ class SubversionTestCase(SCMVerTestCase):
     def checkout(self, repo, wc):
         repo = os.path.join(self._root, repo)
         wc = os.path.join(self._root, wc)
-        svn.run('checkout', 'file:///{}'.format(repo.replace(os.sep, '/')), wc)
+        svn.run('checkout', 'file:///' + repo.replace(os.sep, '/'), wc)
         os.chdir(wc)
 
     def switch(self, path):
@@ -154,7 +154,7 @@ class SubversionTestCase(SCMVerTestCase):
         svn.run('commit', '-m', '_')
         for i in range(3):
             for proj in ('spam', 'eggs', 'ham')[i:]:
-                svn.run('copy', os.path.join(proj, 'branches', '1.x'), os.path.join(proj, 'tags', '1.{}'.format(i)))
+                svn.run('copy', os.path.join(proj, 'branches', '1.x'), os.path.join(proj, 'tags', f'1.{i}'))
             svn.run('commit', '-m', '_')
 
         for proj, tag, revision in (
@@ -176,7 +176,7 @@ class SubversionTestCase(SCMVerTestCase):
                 ('tags/' + tag, 3, None),
             ):
                 with self.subTest(proj=proj, path=path, tag=tag):
-                    self.switch(proj + '/' + path)
+                    self.switch(f'{proj}/{path}')
                     self.assertEqual(svn.parse('.', name='.svn'), core.SCMInfo(distance=distance, revision=5))
                     self.assertEqual(svn.parse('.', name='.svn', **kwargs), core.SCMInfo(tag, 0, 5, False, branch))
 

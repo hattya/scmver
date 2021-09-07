@@ -78,7 +78,7 @@ def _distance_of(root: str, rev: Optional[Union[int, str]] = None) -> int:
         off = 0
     else:
         off = 1
-    return len(run('log', '-r', '{}..'.format(rev), '-n', '0', '--line', cwd=root)[0].splitlines()) - off
+    return len(run('log', '-r', f'{rev}..', '-n', '0', '--line', cwd=root)[0].splitlines()) - off
 
 
 def version() -> Tuple[Union[int, str], ...]:

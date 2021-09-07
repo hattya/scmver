@@ -1,7 +1,7 @@
 #
 # test_core
 #
-#   Copyright (c) 2019-2020 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -18,12 +18,12 @@ class CoreTestCase(SCMVerTestCase):
 
     def assertVersion(self, version, normalized):
         v = core.Version(version)
-        self.assertEqual(repr(v), '<Version({})>'.format(version))
+        self.assertEqual(repr(v), f'<Version({version})>')
         self.assertEqual(str(v), version)
         self.assertEqual(str(v.normalize()), normalized)
 
         v = core.Version(version.upper())
-        self.assertEqual(repr(v), '<Version({})>'.format(version.upper()))
+        self.assertEqual(repr(v), f'<Version({version.upper()})>')
         self.assertEqual(str(v), version.upper())
         self.assertEqual(str(v.normalize()), normalized)
 
@@ -45,10 +45,10 @@ class CoreTestCase(SCMVerTestCase):
                 revision = '{revision}'
             """))
             with open(path) as fp:
-                self.assertEqual(fp.read(), textwrap.dedent("""\
+                self.assertEqual(fp.read(), textwrap.dedent(f"""\
                     version = '1.0'
-                    revision = '{}'
-                """.format(rev)))
+                    revision = '{rev}'
+                """))
 
     def test_load_version(self):
         self.assertEqual(core.load_version('os:name'), os.name)
@@ -100,12 +100,12 @@ class CoreTestCase(SCMVerTestCase):
         v = core.next_version(core.SCMInfo('1.0', 1, rev, True, 'master'),
                               spec='minor.dev',
                               local='{revision}.{local:%Y-%m-%d}')
-        self.assertEqual(v, '1.1.dev+{}.{:%Y-%m-%d}'.format(rev, datetime.datetime.now()))
+        self.assertEqual(v, f'1.1.dev+{rev}.{datetime.datetime.now():%Y-%m-%d}')
 
         v = core.next_version(core.SCMInfo('1.0', 1, rev, True, 'master'),
                               spec='minor.dev',
-                              local=lambda info: '{}.{:%Y-%m-%d}'.format(info.revision, datetime.datetime.now()))
-        self.assertEqual(v, '1.1.dev+{}.{:%Y-%m-%d}'.format(rev, datetime.datetime.now()))
+                              local=lambda info: f'{info.revision}.{datetime.datetime.now():%Y-%m-%d}')
+        self.assertEqual(v, f'1.1.dev+{rev}.{datetime.datetime.now():%Y-%m-%d}')
 
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
@@ -178,12 +178,12 @@ class CoreTestCase(SCMVerTestCase):
 
             info = core.SCMInfo('v1.0', revision=rev, branch='default')
             with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
-                fp.write(textwrap.dedent("""\
-                    repo: {0.revision}
-                    node: {0.revision}
-                    branch: {0.branch}
-                    tag: {0.tag}
-                """.format(info)))
+                fp.write(textwrap.dedent(f"""\
+                    repo: {info.revision}
+                    node: {info.revision}
+                    branch: {info.branch}
+                    tag: {info.tag}
+                """))
                 fp.flush()
             self.assertEqual(core.stat(path, **kwargs), info)
             kwargs['.hg_archival.txt'] = False
@@ -203,12 +203,12 @@ class CoreTestCase(SCMVerTestCase):
 
                     info = core.SCMInfo('v1.0', revision=rev, branch='default')
                     with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
-                        fp.write(textwrap.dedent("""\
-                            repo: {0.revision}
-                            node: {0.revision}
-                            branch: {0.branch}
-                            tag: {0.tag}
-                        """.format(info)))
+                        fp.write(textwrap.dedent(f"""\
+                            repo: {info.revision}
+                            node: {info.revision}
+                            branch: {info.branch}
+                            tag: {info.tag}
+                        """))
                         fp.flush()
                     self.assertEqual(core.stat(path), info)
                 finally:
@@ -232,24 +232,24 @@ class CoreTestCase(SCMVerTestCase):
                     norm = pre
 
                 v = ['1.0', pre]
-                self.assertVersion(sep.join(v), '1.0{pre}0'.format(pre=norm))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{pre}0'.format(pre=norm))
+                self.assertVersion(sep.join(v), f'1.0{norm}0')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{norm}0')
 
                 v = ['1.0' + pre]
-                self.assertVersion(sep.join(v), '1.0{pre}0'.format(pre=norm))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{pre}0'.format(pre=norm))
+                self.assertVersion(sep.join(v), f'1.0{norm}0')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{norm}0')
 
                 v = ['1.0', pre + '1']
-                self.assertVersion(sep.join(v), '1.0{pre}1'.format(pre=norm))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{pre}1'.format(pre=norm))
+                self.assertVersion(sep.join(v), f'1.0{norm}1')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{norm}1')
 
                 v = ['1.0' + pre, '1']
-                self.assertVersion(sep.join(v), '1.0{pre}1'.format(pre=norm))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{pre}1'.format(pre=norm))
+                self.assertVersion(sep.join(v), f'1.0{norm}1')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{norm}1')
 
                 v = ['1.0', pre, '1']
-                self.assertVersion(sep.join(v), '1.0{pre}1'.format(pre=norm))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{pre}1'.format(pre=norm))
+                self.assertVersion(sep.join(v), f'1.0{norm}1')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{norm}1')
 
         self.assertEqual(core.Version('1.0a').pre, ('a', -1))
         self.assertEqual(core.Version('1.0a1').pre, ('a', 1))
@@ -321,8 +321,8 @@ class CoreTestCase(SCMVerTestCase):
 
             for s in ('a', 'b', 'rc', '.post'):
                 v = ['1.0', s.strip('.'), 'dev']
-                self.assertVersion(sep.join(v), '1.0{s}0.dev0'.format(s=s))
-                self.assertVersion('1!' + sep.join(v), '1!1.0{s}0.dev0'.format(s=s))
+                self.assertVersion(sep.join(v), f'1.0{s}0.dev0')
+                self.assertVersion('1!' + sep.join(v), f'1!1.0{s}0.dev0')
 
         self.assertEqual(core.Version('1.0.dev').dev, ('dev', -1))
         self.assertEqual(core.Version('1.0.dev1').dev, ('dev', 1))
