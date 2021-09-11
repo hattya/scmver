@@ -82,6 +82,7 @@ setup(name='scmver',
           'Topic :: System :: Software Distribution',
           'Topic :: Utilities',
       ],
+      python_requires='>= 3.6',
       cmdclass=cmdclass,
       extras_require={
           'cli': ['click'],
