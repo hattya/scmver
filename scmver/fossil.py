@@ -114,8 +114,10 @@ def _branch_of(root: str, closed: bool = False) -> Optional[str]:
     if closed:
         args += ('-c',)
     for l in run(*args, cwd=root)[0].splitlines():
-        if l.startswith('* '):
-            return l[2:]
+        v = l.split()
+        if (len(v) > 1
+            and '*' in v[0]):
+            return v[1]
     return None
 
 
