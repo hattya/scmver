@@ -5,6 +5,7 @@ Version 1.3
 -----------
 
 * Fix branch detection with Fossil 2.17.
+* Support Python 3.10.
 
 
 Version 1.2
