@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.3
 -----------
 
+Release date: 2021-11-11
+
 * Fix branch detection with Fossil 2.17.
 * Support Python 3.10.
 
