@@ -7,7 +7,7 @@
 #
 
 import re
-from typing import cast, Any, Dict, Optional, Sequence, Tuple, Union
+from typing import cast, Any, Dict, Optional, Tuple, Union
 
 from . import core, util
 
@@ -87,7 +87,7 @@ def version() -> Tuple[Union[int, str], ...]:
     if not m:
         return ()
 
-    v = tuple(map(int, m.group('release').split('.')))
+    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('pre_s'):
@@ -99,5 +99,5 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
-    return util.exec_((util.which('brz') or util.which('bzr'),) + args, **kwargs)
+def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+    return util.exec_((cast(str, util.which('brz') or util.which('bzr')),) + args, **kwargs)

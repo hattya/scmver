@@ -9,7 +9,7 @@
 import os
 import re
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import cast, Any, Dict, List, Optional, Tuple
 
 from . import core, util
 
@@ -130,10 +130,10 @@ def version() -> Tuple[int, ...]:
     return tuple(map(int, m.group('release').split('.')))
 
 
-def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     env = {k: os.environ[k] for k in _env if k in os.environ}
     if 'env' in kwargs:
         env.update(kwargs['env'])
     kwargs['env'] = env
     kwargs['encoding'] = 'utf-8'
-    return util.exec_((util.which('fossil'),) + args, **kwargs)
+    return util.exec_((cast(str, util.which('fossil')),) + args, **kwargs)

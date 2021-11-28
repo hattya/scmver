@@ -96,6 +96,18 @@ class BazaarTestCase(SCMVerTestCase):
         finally:
             self.branch = branch
 
+    def test_status(self):
+        self.init()
+        self.touch('spam')
+        bzr.run('add', '.')
+        bzr.run('commit', '-m', '_')
+
+        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(distance=1, revision='1', branch='trunk'))
+
+        self.touch('eggs')
+
+        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(distance=1, revision='1', dirty=True, branch='trunk'))
+
     def test_version(self):
         self.assertGreaterEqual(len(bzr.version()), 3)
 

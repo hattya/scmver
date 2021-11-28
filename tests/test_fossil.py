@@ -120,8 +120,7 @@ class FossilTestCase(SCMVerTestCase):
 
     def test_status(self):
         self.init()
-        self.touch('file1')
-        self.touch('file2')
+        self.touch('file')
 
         info = fsl.parse('.', name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')

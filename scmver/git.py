@@ -8,7 +8,7 @@
 
 import re
 import sys
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import cast, Any, Optional, Tuple, Union
 
 from . import core, util
 
@@ -67,7 +67,7 @@ def version() -> Tuple[Union[int, str], ...]:
     if not m:
         return ()
 
-    v = tuple(map(int, m.group('release').split('.')))
+    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 4:
         v += (0,) * (4 - len(v))
     if m.group('alpha'):
@@ -79,7 +79,7 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     if sys.platform == 'win32':
         kwargs['encoding'] = 'utf-8'
-    return util.exec_((util.which('git'), '-c', 'core.quotepath=false') + args, **kwargs)
+    return util.exec_((cast(str, util.which('git')), '-c', 'core.quotepath=false') + args, **kwargs)

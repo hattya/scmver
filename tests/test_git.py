@@ -39,15 +39,6 @@ class GitTestCase(SCMVerTestCase):
             with self.subTest(name=name):
                 self.assertIsNone(git.parse('.', name=name))
 
-        self.init()
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
-
-        self.touch('file')
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
-
-        git.run('add', '.')
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(dirty=True, branch='master'))
-
     def test_no_tags(self):
         self.init()
         self.touch('file')
@@ -126,6 +117,16 @@ class GitTestCase(SCMVerTestCase):
         self.assertIsNotNone(info.revision)
         self.assertFalse(info.dirty)
         self.assertIsNone(info.branch)
+
+    def test_status(self):
+        self.init()
+        self.touch('file')
+
+        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
+
+        git.run('add', '.')
+
+        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(dirty=True, branch='master'))
 
     def test_version(self):
         self.assertGreaterEqual(len(git.version()), 4)

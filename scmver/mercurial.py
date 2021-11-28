@@ -8,7 +8,7 @@
 
 import os
 import re
-from typing import cast, Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import cast, Any, Dict, List, Optional, Tuple, Union
 
 from . import core, util
 
@@ -42,7 +42,7 @@ def parse(root: str, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[cor
         out = run('identify', '-ib', cwd=root, env=env, encoding='utf-8')[0].strip().split()
         if len(out) == 2:
             try:
-                null = int(out[0][:-1]) == 0
+                null = int(out[0].rstrip('+')) == 0
             except ValueError:
                 null = False
             dirty = out[0].endswith('+')
@@ -95,7 +95,7 @@ def version() -> Tuple[Union[int, str], ...]:
     if not m:
         return ()
 
-    v = tuple(map(int, m.group('release').split('.')))
+    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('alpha'):
@@ -106,11 +106,11 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: Sequence[str], **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     if 'env' in kwargs:
         env = _env.copy()
         env.update(kwargs['env'])
     else:
         env = _env
     kwargs['env'] = env
-    return util.exec_((util.which('hg'),) + args, **kwargs)
+    return util.exec_((cast(str, util.which('hg')),) + args, **kwargs)

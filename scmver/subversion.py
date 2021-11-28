@@ -8,7 +8,7 @@
 
 import os
 import re
-from typing import cast, Any, Dict, Mapping, Optional, Sequence, Tuple, Union
+from typing import cast, Any, Dict, Mapping, Optional, Tuple, Union
 import urllib.parse
 import xml.etree.cElementTree as ET
 
@@ -155,7 +155,7 @@ def version() -> Tuple[Union[int, str], ...]:
     if not m:
         return ()
 
-    v = tuple(map(int, m.group('release').split('.')))
+    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if m.group('pre_s'):
         s = m.group('pre_s')
         v += (s[0] if s != 'rc' else s, int(m.group('pre_n')))
@@ -164,9 +164,9 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: Sequence[str], **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
+def run(*args: str, **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
     xml = '--xml' in args
     if xml:
         kwargs['encoding'] = 'utf-8'
-    out, err = util.exec_((util.which('svn'), '--non-interactive') + args, **kwargs)
+    out, err = util.exec_((cast(str, util.which('svn')), '--non-interactive') + args, **kwargs)
     return ET.fromstring(out.encode('utf-8')) if xml else out, err
