@@ -167,6 +167,9 @@ fallback
 bazaar.tag
   A regular expression pattern to filter tags.
 
+darcs.tag
+  A regular expression pattern to filter tags.
+
 fossil.tag
   A regular expression pattern to filter tags.
 

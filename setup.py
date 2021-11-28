@@ -97,6 +97,7 @@ setup(name='scmver',
           ],
           'scmver.parse': [
               '.bzr = scmver.bazaar:parse',
+              '_darcs = scmver.darcs:parse',
               '.fslckout = scmver.fossil:parse',
               '_FOSSIL_ = scmver.fossil:parse',
               '.git = scmver.git:parse',

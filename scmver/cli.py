@@ -98,6 +98,9 @@ _stat_options = (
     click.option('--bzr-tag',
                  metavar='REGEX',
                  help='Regular expression to filter tags.'),
+    click.option('--darcs-tag',
+                 metavar='REGEX',
+                 help='Regular expression to filter tags.'),
     click.option('--fsl-tag',
                  metavar='REGEX',
                  help='Regular expression to filter tags.'),
@@ -207,6 +210,7 @@ def _stat(path: str, **opts: Any) -> Optional[core.SCMInfo]:
     kwargs = {k: opts[n]
               for k, n in (
                   ('bazaar.tag', 'bzr_tag'),
+                  ('darcs.tag', 'darcs_tag'),
                   ('fossil.tag', 'fsl_tag'),
                   ('git.tag', 'git_tag'),
                   ('mercurial.tag', 'hg_tag'),

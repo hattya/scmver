@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.4
+-----------
+
+* Add support for Darcs
+
+
 Version 1.3
 -----------
 

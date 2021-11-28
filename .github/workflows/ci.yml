@@ -54,15 +54,20 @@ jobs:
           pip install -U coverage tox
       - name: Install VCSes on Linux
         if: matrix.platform == 'Linux'
-        run: sudo apt install brz fossil
+        run: sudo apt install brz darcs fossil
       - name: Install VCSes on macOS
         if: matrix.platform == 'macOS'
-        run: brew install breezy fossil mercurial
+        run: brew install breezy darcs fossil mercurial
       - name: Install VCSes on Windows
         if: matrix.platform == 'Windows'
         run: |
           choco install -y bzr fossil
-          echo ${env:ProgramFiles(x86)}\Bazaar >> $env:GITHUB_PATH
+          echo ${env:ProgramFiles(x86)}\Bazaar >>$env:GITHUB_PATH
+
+          $uri = 'http://darcs.net/binaries/windows/'
+          mkdir $env:ProgramFiles\Darcs | Out-Null
+          Invoke-WebRequest ($uri + ((Invoke-WebRequest $uri).Links | Where-Object { $_.Href -match '\.exe$' } | Select-Object -Last 1).Href) -OutFile $env:ProgramFiles\Darcs\darcs.exe
+          echo $env:ProgramFiles\Darcs >>$env:GITHUB_PATH
       - name: Test
         run: tox
       - name: Generate XML coverage report
