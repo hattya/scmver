@@ -33,7 +33,7 @@ Installation
 Requiements
 -----------
 
-- Python 3.6+
+- Python 3.7+
 - setuptools
 
 

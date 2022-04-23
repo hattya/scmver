@@ -5,6 +5,7 @@ Version 1.4
 -----------
 
 * Add support for Darcs
+* Drop Python 3.6 support.
 
 
 Version 1.3
