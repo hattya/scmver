@@ -43,9 +43,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -61,8 +61,7 @@ jobs:
       - name: Install VCSes on Windows
         if: matrix.platform == 'Windows'
         run: |
-          choco install -y bzr fossil
-          echo ${env:ProgramFiles(x86)}\Bazaar >>$env:GITHUB_PATH
+          choco install -y fossil
 
           $uri = 'http://darcs.net/binaries/windows/'
           mkdir $env:ProgramFiles\Darcs | Out-Null
@@ -73,7 +72,7 @@ jobs:
       - name: Generate XML coverage report
         run: coverage xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           flags: ${{ matrix.platform }}
           env_vars: TOXENV
