@@ -1,11 +1,12 @@
 #
 # scmver.git
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
+import os
 import re
 import sys
 from typing import cast, Any, Optional, Tuple, Union
@@ -16,6 +17,8 @@ from . import core, util
 __all__ = ['parse', 'version', 'run']
 
 _TAG = 'git.tag'
+# environ
+_env: Tuple[str, ...] = ('GIT_CONFIG_NOSYSTEM', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_GLOBAL', 'HOME', 'XDG_CONFIG_HOME')
 
 _version_re = re.compile(r"""
     \A
@@ -80,6 +83,10 @@ def version() -> Tuple[Union[int, str], ...]:
 
 
 def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+    env = {k: os.environ[k] for k in _env if k in os.environ}
+    if 'env' in kwargs:
+        env.update(kwargs['env'])
+    kwargs['env'] = env
     if sys.platform == 'win32':
         kwargs['encoding'] = 'utf-8'
     return util.exec_((cast(str, util.which('git')), '-c', 'core.quotepath=false') + args, **kwargs)

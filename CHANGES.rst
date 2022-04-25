@@ -6,6 +6,7 @@ Version 1.4
 
 * Add support for Darcs
 * Drop Python 3.6 support.
+* Pass necessary environment variables for Git
 
 
 Version 1.3
