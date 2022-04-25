@@ -10,7 +10,7 @@ import os
 import re
 from typing import cast, Any, Dict, Mapping, Optional, Tuple, Union
 import urllib.parse
-import xml.etree.cElementTree as ET
+import xml.etree.ElementTree as ET
 
 from . import core, util
 
