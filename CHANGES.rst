@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.4
 -----------
 
+Release date: 2022-04-27
+
 * Add support for Darcs
 * Drop Python 3.6 support.
 * Pass necessary environment variables for Git
