@@ -1,7 +1,7 @@
 #
 # test_setuptools
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,6 +10,12 @@ import distutils.dist
 import os
 import sys
 import textwrap
+import unittest
+
+try:
+    import tomli
+except ImportError:
+    tomli = None
 
 from scmver import core, setuptools
 from base import SCMVerTestCase
@@ -38,10 +44,54 @@ class SetuptoolsTestCase(SCMVerTestCase):
             """))
             fp.flush()
 
+    def finalize_version(self, scmver):
+        with open('pyproject.toml', 'w') as fp:
+            fp.write(textwrap.dedent("""\
+                [build-system]
+                requires = [
+                    "setuptools >= 42",
+                    "scmver[toml] >= 1.5",
+                ]
+                build-backend = "setuptools.build_meta"
+            """))
+            if scmver is not None:
+                fp.write('[tool.scmver]\n')
+                for k, v in scmver.items():
+                    fp.write(f'{k} = {v!r}\n')
+            fp.flush()
+
+        dist = distutils.dist.Distribution()
+        setuptools.finalize_version(dist)
+        return dist.metadata.version
+
     def scmver(self, value):
         dist = distutils.dist.Distribution()
         setuptools.scmver(dist, 'scmver', value)
         return dist.metadata.version
+
+    @unittest.skipUnless(tomli, 'requires tomli')
+    def test_finalize_version(self):
+        self.init()
+        self.assertIsNone(self.finalize_version(None))
+        self.assertEqual(self.finalize_version({}), '1.0')
+
+    @unittest.skipUnless(tomli, 'requires tomli')
+    def test_finalize_version_fallback(self):
+        scmver = {'fallback': 'toast:version'}
+        with open('toast.py', 'w') as fp:
+            fp.write(core._TEMPLATE.format(version='1.1'))
+            fp.flush()
+        sys.path.append(self._root)
+        try:
+            self.assertEqual(self.finalize_version(scmver), '1.1')
+        finally:
+            sys.path.pop()
+
+        scmver = {'fallback': ['beans:version', '.']}
+        with open('beans.py', 'w') as fp:
+            fp.write(core._TEMPLATE.format(version='1.2'))
+            fp.flush()
+        self.assertEqual(self.finalize_version(scmver), '1.2')
 
     def test_scmver_with_boolean(self):
         self.init()

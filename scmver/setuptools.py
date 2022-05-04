@@ -1,7 +1,7 @@
 #
 # scmver.setuptools
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -13,7 +13,13 @@ import setuptools
 from . import core
 
 
-__all__ = ['scmver']
+__all__ = ['finalize_version', 'scmver']
+
+
+def finalize_version(dist: setuptools.Distribution) -> None:
+    scmver = core.load_project()
+    if scmver is not None:
+        dist.metadata.version = core.get_version(**scmver)
 
 
 def scmver(dist: setuptools.Distribution, key: str, value: Any) -> None:

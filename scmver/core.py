@@ -1,7 +1,7 @@
 #
 # scmver.core
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -15,7 +15,7 @@ import textwrap
 from typing import cast, Any, Callable, Dict, Mapping, NamedTuple, Optional, Pattern, Tuple, Union
 
 
-__all__ = ['generate', 'get_version', 'load_version', 'next_version', 'stat',
+__all__ = ['generate', 'get_version', 'load_version', 'next_version', 'load_project', 'stat',
            'SCMInfo', 'Version', 'VersionError']
 
 SV = Tuple[str, int]
@@ -155,6 +155,24 @@ def next_version(info: 'SCMInfo', spec: str = 'post', local: str = '{local:%Y-%m
     else:
         lv = None
     return str(pv) if not lv else f'{pv}+{lv}'
+
+
+def load_project(path: str = 'pyproject.toml') -> Optional[Dict[str, Any]]:
+    try:
+        import tomli
+    except ImportError:
+        return None
+
+    if os.path.isfile(path):
+        with open(path, 'rb') as fp:
+            proj = tomli.load(fp)
+        if 'tool' in proj:
+            if 'scmver' in proj['tool']:
+                root = os.path.dirname(os.path.abspath(path))
+                scmver = cast(Dict[str, Any], proj['tool']['scmver'])
+                scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
+                return scmver
+    return None
 
 
 def stat(path: str, **kwargs: Any) -> Optional['SCMInfo']:

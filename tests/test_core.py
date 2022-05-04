@@ -1,14 +1,21 @@
 #
 # test_core
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import datetime
 import os
+import sys
 import textwrap
+import unittest
+
+try:
+    import tomli
+except ImportError:
+    tomli = None
 
 from scmver import core
 from base import SCMVerTestCase
@@ -109,6 +116,53 @@ class CoreTestCase(SCMVerTestCase):
 
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
+
+    @unittest.skipUnless(tomli, 'requires tomli')
+    def test_load_project(self):
+        with self.tempdir() as path:
+            path = os.path.join(path, 'pyproject.toml')
+            with open(path, 'w') as fp:
+                fp.write(textwrap.dedent("""\
+                    [build-system]
+                    requires = [
+                        "setuptools >= 42",
+                        "scmver[toml] >= 1.5",
+                    ]
+                    build-backend = "setuptools.build_meta"
+                """))
+                fp.flush()
+            self.assertIsNone(core.load_project(path))
+
+            with open(path, 'a') as fp:
+                fp.write(textwrap.dedent("""\
+                    [tool._]
+                """))
+                fp.flush()
+            self.assertIsNone(core.load_project(path))
+
+            with open(path, 'a') as fp:
+                fp.write(textwrap.dedent("""\
+                    [tool.scmver]
+                """))
+                fp.flush()
+            self.assertEqual(core.load_project(path), {'root': os.path.dirname(path)})
+
+            with open(path, 'a') as fp:
+                fp.write(textwrap.dedent("""\
+                    root = ".."
+                """))
+                fp.flush()
+            self.assertEqual(core.load_project(path), {'root': os.path.join(os.path.dirname(path), '..')})
+
+            # ImportError
+            for m in tuple(sys.modules):
+                if m.startswith('tomli'):
+                    del sys.modules[m]
+            sys.modules['tomli'] = None
+            try:
+                self.assertIsNone(core.load_project(path))
+            finally:
+                del sys.modules['tomli']
 
     def test_stat(self):
         rev = self.revision(b'scmver.core.stat')

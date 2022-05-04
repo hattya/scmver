@@ -65,4 +65,7 @@ setup(version=scmver.get_version(**{
               '.hg_archival.txt = scmver.mercurial:parse',
               '.svn = scmver.subversion:parse',
           ],
+          'setuptools.finalize_distribution_options': [
+              'scmver = scmver.setuptools:finalize_version',
+          ],
       })

@@ -40,6 +40,23 @@ Requiements
 Usage
 -----
 
+pyproject.toml
+--------------
+
+.. code:: toml
+
+   [build-system]
+   requires = [
+       "setuptools >= 42",
+       "scmver[toml] >= 1.5",
+   ]
+   build-backend = "setuptools.build_meta"
+
+   [tool.scmver]
+
+See Configuration_ for key/value pairs.
+
+
 setuptools
 ~~~~~~~~~~
 

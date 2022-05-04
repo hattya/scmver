@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.5
+-----------
+
+* Add support for pyproject.toml.
+
+
 Version 1.4
 -----------
 
