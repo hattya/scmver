@@ -1,14 +1,16 @@
 #
 # test_subversion
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
+import sys
 import os
 import textwrap
 import unittest
+import unittest.mock
 
 from scmver import core, subversion as svn, util
 from base import SCMVerTestCase
@@ -19,19 +21,24 @@ class SubversionTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        if sys.version_info >= (3, 8):
+            self._dir.cleanup()
+        else:
+            self._dir._finalizer.detach()
+            self.rmtree(self.root)
 
     def create(self, name):
-        util.exec_(('svnadmin', 'create', os.path.join(self._root, name)))
+        util.exec_(('svnadmin', 'create', os.path.join(self.root, name)))
 
     def checkout(self, repo, wc):
-        repo = os.path.join(self._root, repo)
-        wc = os.path.join(self._root, wc)
+        repo = os.path.join(self.root, repo)
+        wc = os.path.join(self.root, wc)
         svn.run('checkout', 'file:///' + repo.replace(os.sep, '/'), wc)
         os.chdir(wc)
 
@@ -197,8 +204,7 @@ class SubversionTestCase(SCMVerTestCase):
     def test_version(self):
         self.assertGreaterEqual(len(svn.version()), 3)
 
-        run = svn.run
-        try:
+        with unittest.mock.patch(f'{svn.__name__}.run') as run:
             # >= 0.14.4 (revision 3553)
             new = textwrap.dedent("""\
                 svn, version {} ({})
@@ -230,7 +236,5 @@ class SubversionTestCase(SCMVerTestCase):
                 (old.format('0.9.0', 'r1302'), (0, 9, 0)),
                 ('', ()),
             ):
-                svn.run = lambda *a, **kw: (out, '')
+                run.return_value = (out, '')
                 self.assertEqual(svn.version(), e)
-        finally:
-            svn.run = run

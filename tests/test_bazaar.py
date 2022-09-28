@@ -1,7 +1,7 @@
 #
 # test_bazaar
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -9,6 +9,7 @@
 import os
 import textwrap
 import unittest
+import unittest.mock
 
 from scmver import core, bazaar as bzr, util
 from base import SCMVerTestCase
@@ -19,23 +20,24 @@ class BazaarTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
-        self.branch = os.path.join(self._root, 'trunk')
+        self.branch = os.path.join(self.root, 'trunk')
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        self._dir.cleanup()
 
     def init(self):
-        bzr.run('init-repo', self._root)
+        bzr.run('init-repo', self.root)
         bzr.run('init', self.branch)
         os.chdir(self.branch)
         bzr.run('whoami', '--branch', 'scmver <scmver@example.com>')
 
     def touch(self, path):
-        with open(os.path.join(self.branch, path), 'w'):
+        with open(path, 'w'):
             pass
 
     def test_empty(self):
@@ -84,8 +86,8 @@ class BazaarTestCase(SCMVerTestCase):
         self.check_locale()
 
         branch = self.branch
-        self.branch = os.path.join(os.path.dirname(self.branch), '\u30d6\u30e9\u30f3\u30c1')
         try:
+            self.branch = os.path.join(os.path.dirname(self.branch), '\u30d6\u30e9\u30f3\u30c1')
             self.init()
             self.touch('\u30d5\u30a1\u30a4\u30eb')
             bzr.run('add', '.')
@@ -111,8 +113,7 @@ class BazaarTestCase(SCMVerTestCase):
     def test_version(self):
         self.assertGreaterEqual(len(bzr.version()), 3)
 
-        run = bzr.run
-        try:
+        with unittest.mock.patch(f'{bzr.__name__}.run') as run:
             # Breezy
             brz = textwrap.dedent("""\
                 Breezy (brz) {}
@@ -146,7 +147,5 @@ class BazaarTestCase(SCMVerTestCase):
                 (old.format('0.0.2.1'), (0, 0, 2, 1)),
                 ('', ()),
             ):
-                bzr.run = lambda *a, **kw: (out, '')
+                run.return_value = (out, '')
                 self.assertEqual(bzr.version(), e)
-        finally:
-            bzr.run = run

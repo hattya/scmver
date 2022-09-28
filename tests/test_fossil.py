@@ -1,13 +1,14 @@
 #
 # test_fossil
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
 import unittest
+import unittest.mock
 
 from scmver import fossil as fsl, util
 from base import SCMVerTestCase
@@ -18,26 +19,27 @@ class FossilTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
-        self._checkout = os.path.join(self._root, 'scmver')
-        os.environ['FOSSIL_HOME'] = self._root
+        self.checkout = os.path.join(self.root, 'scmver')
+        os.environ['FOSSIL_HOME'] = self.root
         os.environ['FOSSIL_USER'] = 'scmver'
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        self._dir.cleanup()
 
     def init(self):
-        repo = self._checkout + '.fossil'
+        repo = f'{self.checkout}.fossil'
         fsl.run('init', repo)
-        os.makedirs(self._checkout)
-        os.chdir(self._checkout)
+        os.makedirs(self.checkout)
+        os.chdir(self.checkout)
         fsl.run('open', repo)
 
     def touch(self, path):
-        with open(os.path.join(self._checkout, path), 'w'):
+        with open(path, 'w'):
             pass
 
     def test_empty(self):
@@ -118,6 +120,19 @@ class FossilTestCase(SCMVerTestCase):
         self.assertFalse(info.dirty)
         self.assertEqual(info.branch, '\u30d6\u30e9\u30f3\u30c1')
 
+    def test_branch(self):
+        self.init()
+        self.touch('file')
+        fsl.run('add', '.')
+        fsl.run('commit', '--branch', 'spam', '--close', '-m', '.')
+
+        info = fsl.parse('.', name='_FOSSIL_')
+        self.assertEqual(info.tag, '0.0')
+        self.assertEqual(info.distance, 2)
+        self.assertIsNotNone(info.revision)
+        self.assertFalse(info.dirty)
+        self.assertEqual(info.branch, 'spam')
+
     def test_status(self):
         self.init()
         self.touch('file')
@@ -138,24 +153,10 @@ class FossilTestCase(SCMVerTestCase):
         self.assertTrue(info.dirty)
         self.assertEqual(info.branch, 'trunk')
 
-    def test_branch(self):
-        self.init()
-        self.touch('file')
-        fsl.run('add', '.')
-        fsl.run('commit', '--branch', 'spam', '--close', '-m', '.')
-
-        info = fsl.parse('.', name='_FOSSIL_')
-        self.assertEqual(info.tag, '0.0')
-        self.assertEqual(info.distance, 2)
-        self.assertIsNotNone(info.revision)
-        self.assertFalse(info.dirty)
-        self.assertEqual(info.branch, 'spam')
-
     def test_version(self):
         self.assertGreaterEqual(len(fsl.version()), 2)
 
-        run = fsl.run
-        try:
+        with unittest.mock.patch(f'{fsl.__name__}.run') as run:
             # >= 1.18 (check-in e0303181a568fe959aaa0fa69d6437ba9895fb3c)
             new = 'This is fossil version {} [{}] {} UTC'
             # <  1.18
@@ -165,10 +166,8 @@ class FossilTestCase(SCMVerTestCase):
                 (old.format('0448438c56', '2011-05-28 18:51:22'), ()),
                 ('', ()),
             ):
-                fsl.run = lambda *a, **kw: (out, '')
+                run.return_value = (out, '')
                 self.assertEqual(fsl.version(), e)
-        finally:
-            fsl.run = run
 
     def test_run(self):
         env = {}

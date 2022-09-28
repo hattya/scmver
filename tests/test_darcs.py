@@ -1,13 +1,14 @@
 #
 # test_darcs
 #
-#   Copyright (c) 2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2021-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
 import unittest
+import unittest.mock
 
 from scmver import darcs, util
 from base import SCMVerTestCase
@@ -18,30 +19,32 @@ class DarcsTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
         self.branch = 'r'
-        os.environ['DARCS_TESTING_PREFS_DIR'] = self._root
-        with open('author', 'w') as fp:
-            print('scmver <scmver@example.com>', file=fp)
+        os.environ['DARCS_TESTING_PREFS_DIR'] = self.root
+        with open(os.path.join(self.root, 'author'), 'w') as fp:
+            fp.write('scmver <scmver@example.com>\n')
+            fp.flush()
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        self._dir.cleanup()
 
     def init(self):
-        os.chdir(self._root)
+        os.chdir(self.root)
         darcs.run('init', self.branch)
-        os.chdir(self.branch)
+        os.chdir(os.path.join(self.root, self.branch))
 
     def clone(self, branch):
-        os.chdir(self._root)
+        os.chdir(self.root)
         darcs.run('clone', self.branch, branch)
-        os.chdir(branch)
+        os.chdir(os.path.join(self.root, branch))
 
     def touch(self, path):
-        with open(os.path.join(path), 'w'):
+        with open(path, 'w'):
             pass
 
     def test_empty(self):
@@ -146,17 +149,14 @@ class DarcsTestCase(SCMVerTestCase):
     def test_version(self):
         self.assertGreaterEqual(len(darcs.version()), 2)
 
-        run = darcs.run
-        try:
+        with unittest.mock.patch(f'{darcs.__name__}.run') as run:
             for out, e in (
                 ('2.5 (release)', (2, 5)),
                 ('2.16.4 (release)', (2, 16, 4)),
                 ('', ()),
             ):
-                darcs.run = lambda *a, **kw: (out, '')
+                run.return_value = (out, '')
                 self.assertEqual(darcs.version(), e)
-        finally:
-            darcs.run = run
 
     def test_run(self):
         env = {}

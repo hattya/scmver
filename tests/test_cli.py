@@ -1,7 +1,7 @@
 #
 # test_cli
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -9,9 +9,9 @@
 import datetime
 import io
 import os
-import sys
 import textwrap
 import unittest
+import unittest.mock
 
 try:
     import click
@@ -24,72 +24,63 @@ from base import SCMVerTestCase
 
 
 @unittest.skipUnless(click, 'requires click')
+@unittest.mock.patch('scmver.core.stat')
 class CLITestCase(SCMVerTestCase):
-
-    def setUp(self):
-        self._stat = core.stat
-
-    def tearDown(self):
-        core.stat = self._stat
 
     def invoke(self, args):
         runner = click.testing.CliRunner()
         return runner.invoke(cli.cli, args)
 
-    def test_run(self):
-        out = io.BytesIO()
-        stdout = sys.stdout
+    @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
+    def test_run(self, stdout, stat):
         try:
-            sys.stdout = io.TextIOWrapper(out, encoding='utf-8')
             cli.run(['--version'])
         except SystemExit as e:
             self.assertEqual(e.code, 0)
-        finally:
-            sys.stdout = stdout
-        self.assertEqual(out.getvalue().decode('utf-8').strip(), f'scmver, version {__version__}')
+        self.assertEqual(stdout.getvalue().strip(), f'scmver, version {__version__}')
 
-    def test_generate_without_repository(self):
-        core.stat = lambda *a, **kw: None
+    def test_generate_without_repository(self, stat):
+        stat.return_value = None
 
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             self.assertEqual(os.stat(path).st_size, 0)
 
-    def test_generate_with_defaults(self):
+    def test_generate_with_defaults(self, stat):
         rev = self.revision(b'scmver.cli.generate')
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, False, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
                 self.assertEqual(fp.read().splitlines()[-1], "version = '1.0'")
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 1, rev, False, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
                 self.assertEqual(fp.read().splitlines()[-1], "version = '1.0.post'")
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, True, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
                 self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0+{datetime.datetime.now():%Y-%m-%d}'")
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 1, rev, True, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
                 self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0.post+{datetime.datetime.now():%Y-%m-%d}'")
 
-    def test_generate_with_template(self):
+    def test_generate_with_template(self, stat):
         rev = self.revision(b'scmver.cli.generate')
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, False, 'master')
 
         with self.tempfile() as path:
             rv = self.invoke(['generate', '-t', "__version__ = '{version}'\\n", path])
@@ -103,7 +94,7 @@ class CLITestCase(SCMVerTestCase):
             with open(path) as fp:
                 self.assertEqual(fp.read(), "__version__ = '1.0'\n")
 
-    def test_load(self):
+    def test_load(self, stat):
         rv = self.invoke(['load', 'os:name'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, f'{os.name}\n')
@@ -112,47 +103,47 @@ class CLITestCase(SCMVerTestCase):
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, f'{os.getcwd()}\n')
 
-    def test_next_without_repository(self):
-        core.stat = lambda *a, **kw: None
+    def test_next_without_repository(self, stat):
+        stat.return_value = None
 
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '')
 
-    def test_next_with_defaults(self):
+    def test_next_with_defaults(self, stat):
         rev = self.revision(b'scmver.cli.next')
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, False, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '1.0\n')
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 1, rev, False, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '1.0.post\n')
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, True, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, f'1.0+{datetime.datetime.now():%Y-%m-%d}\n')
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 1, rev, True, 'master')
         rv = self.invoke(['next'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, f'1.0.post+{datetime.datetime.now():%Y-%m-%d}\n')
 
-    def test_next_with_spec(self):
+    def test_next_with_spec(self, stat):
         rev = self.revision(b'scmver.cli.next')
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 1, rev, False, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 1, rev, False, 'master')
 
         rv = self.invoke(['next', '-s', 'minor.dev'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '1.1.dev\n')
 
-    def test_next_with_local(self):
+    def test_next_with_local(self, stat):
         rev = self.revision(b'scmver.cli.next')
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, True, 'master')
 
         rv = self.invoke(['next', '-l', '{local:%Y%m%d}'])
         self.assertEqual(rv.exit_code, 0)
@@ -174,9 +165,9 @@ class CLITestCase(SCMVerTestCase):
         self.assertEqual(rv.exit_code, 2)
         self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ Callable object does not found\.$')
 
-    def test_next_with_version(self):
+    def test_next_with_version(self, stat):
         rev = self.revision(b'scmver.cli.next')
-        core.stat = lambda *a, **kw: core.SCMInfo('spam-1.0', 0, rev, False, 'master')
+        stat.return_value = core.SCMInfo('spam-1.0', 0, rev, False, 'master')
 
         rv = self.invoke(['next', '-v', r'spam-(?P<version>\d+\..+)'])
         self.assertEqual(rv.exit_code, 0)
@@ -190,17 +181,17 @@ class CLITestCase(SCMVerTestCase):
         self.assertEqual(rv.exit_code, 2)
         self.assertRegex(rv.output.splitlines()[-1], r'^Error: .+ Regex does not have the version group\.$')
 
-    def test_stat_without_repository(self):
-        core.stat = lambda *a, **kw: None
+    def test_stat_without_repository(self, stat):
+        stat.return_value = None
 
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '')
 
-    def test_stat_with_defaults(self):
+    def test_stat_with_defaults(self, stat):
         rev = self.revision(b'scmver.cli.stat')
 
-        core.stat = lambda *a, **kw: core.SCMInfo(branch='HEAD')
+        stat.return_value = core.SCMInfo(branch='HEAD')
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, textwrap.dedent("""\
@@ -209,7 +200,7 @@ class CLITestCase(SCMVerTestCase):
             Branch:   HEAD
         """))
 
-        core.stat = lambda *a, **kw: core.SCMInfo('0.0', 1, rev, False, 'master')
+        stat.return_value = core.SCMInfo('0.0', 1, rev, False, 'master')
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, textwrap.dedent(f"""\
@@ -219,7 +210,7 @@ class CLITestCase(SCMVerTestCase):
             Branch:   master
         """))
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev, True, 'master')
+        stat.return_value = core.SCMInfo('v1.0', 0, rev, True, 'master')
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, textwrap.dedent(f"""\
@@ -230,7 +221,7 @@ class CLITestCase(SCMVerTestCase):
             Branch:   master
         """))
 
-        core.stat = lambda *a, **kw: core.SCMInfo('v1.0', 0, rev)
+        stat.return_value = core.SCMInfo('v1.0', 0, rev)
         rv = self.invoke(['stat'])
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, textwrap.dedent(f"""\

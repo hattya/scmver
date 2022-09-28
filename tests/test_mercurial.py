@@ -1,7 +1,7 @@
 #
 # test_mercurial
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,6 +10,7 @@ import contextlib
 import os
 import textwrap
 import unittest
+import unittest.mock
 
 from scmver import core, mercurial as hg, util
 from base import SCMVerTestCase
@@ -20,12 +21,13 @@ class MercurialTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        self._dir.cleanup()
 
     def init(self):
         hg.run('init')
@@ -44,10 +46,10 @@ class MercurialTestCase(SCMVerTestCase):
             try:
                 yield path
             finally:
-                os.chdir(self._root)
+                os.chdir(self.root)
 
     def touch(self, path):
-        with open(os.path.join(self._root, path), 'w'):
+        with open(path, 'w'):
             pass
 
     def test_empty(self):
@@ -203,11 +205,19 @@ class MercurialTestCase(SCMVerTestCase):
 
         self.assertEqual(hg.parse('.', name='.hg'), core.SCMInfo(dirty=True, branch='default'))
 
+    @unittest.mock.patch('scmver.mercurial.run')
+    def test_lt_hg36(self, run):
+        run.side_effect = [
+            ('0123456789ab default', ''),
+            ('', "hg: parse error: unknown function 'latesttag'"),
+        ]
+
+        self.assertIsNone(hg.parse('.', name='.hg'))
+
     def test_version(self):
         self.assertGreaterEqual(len(hg.version()), 3)
 
-        run = hg.run
-        try:
+        with unittest.mock.patch(f'{hg.__name__}.run') as run:
             # >= 0.6c (changeset 849:8933ef744325)
             new = textwrap.dedent("""\
                 Mercurial Distributed SCM (version {})
@@ -232,10 +242,8 @@ class MercurialTestCase(SCMVerTestCase):
                 (old.format('0.6'), (0, 6, 0)),
                 ('', ()),
             ):
-                hg.run = lambda *a, **kw: (out, '')
+                run.return_value = (out, '')
                 self.assertEqual(hg.version(), e)
-        finally:
-            hg.run = run
 
     def test_run(self):
         env = {}

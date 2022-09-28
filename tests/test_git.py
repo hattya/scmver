@@ -1,13 +1,15 @@
 #
 # test_git
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
+import sys
 import unittest
+import unittest.mock
 
 from scmver import core, git, util
 from base import SCMVerTestCase
@@ -18,12 +20,17 @@ class GitTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        if sys.version_info >= (3, 8):
+            self._dir.cleanup()
+        else:
+            self._dir._finalizer.detach()
+            self.rmtree(self.root)
 
     def init(self):
         git.run('init')
@@ -31,7 +38,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('config', 'user.email', 'scmver@example.com')
 
     def touch(self, path):
-        with open(os.path.join(self._root, path), 'w'):
+        with open(path, 'w'):
             pass
 
     def test_empty(self):
@@ -131,8 +138,7 @@ class GitTestCase(SCMVerTestCase):
     def test_version(self):
         self.assertGreaterEqual(len(git.version()), 4)
 
-        run = git.run
-        try:
+        with unittest.mock.patch(f'{git.__name__}.run') as run:
             out = 'git version {}'
             for v, e in (
                 ('2.21.0', (2, 21, 0, 0)),
@@ -144,7 +150,10 @@ class GitTestCase(SCMVerTestCase):
                 ('1.0.0b', (1, 0, 0, 0, 'b')),
                 ('', ()),
             ):
-                git.run = lambda *a, **kw: (out.format(v) if v else '', '')
+                run.return_value = (out.format(v) if v else '', '')
                 self.assertEqual(git.version(), e)
-        finally:
-            git.run = run
+
+    def test_run(self):
+        env = {}
+        git.run('help', env=env)
+        self.assertEqual(env, {})

@@ -1,7 +1,7 @@
 #
 # base
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -11,7 +11,6 @@ import hashlib
 import locale
 import os
 import shutil
-import stat
 import tempfile
 import unittest
 
@@ -35,23 +34,12 @@ class SCMVerTestCase(unittest.TestCase):
         if encoding.lower() not in ('cp932', 'euc-jp', 'utf-8'):
             self.skipTest('requires UTF-8 or Japanese locale')
 
-    def mkdtemp(self):
-        return tempfile.mkdtemp(prefix='scmver-')
-
-    def mkstemp(self):
-        return tempfile.mkstemp(prefix='scmver-')
-
-    @contextlib.contextmanager
     def tempdir(self):
-        path = self.mkdtemp()
-        try:
-            yield path
-        finally:
-            self.rmtree(path)
+        return tempfile.TemporaryDirectory(prefix='scmver-')
 
     @contextlib.contextmanager
     def tempfile(self):
-        fd, path = self.mkstemp()
+        fd, path = tempfile.mkstemp(prefix='scmver-')
         try:
             os.close(fd)
             yield path
@@ -66,7 +54,7 @@ class SCMVerTestCase(unittest.TestCase):
     def rmtree(self, path):
         def onerror(func, path, exc_info):
             if not os.access(path, os.W_OK):
-                os.chmod(path, stat.S_IWUSR)
+                os.chmod(path, 0o700)
                 func(path)
             else:
                 raise

@@ -25,17 +25,18 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._root = self.mkdtemp()
-        os.chdir(self._root)
+        self._dir = self.tempdir()
+        self.root = self._dir.name
+        os.chdir(self.root)
 
         self._rev = self.revision(b'scmver.setuptools')
 
     def tearDown(self):
         os.chdir(self._cwd)
-        self.rmtree(self._root)
+        self._dir.cleanup()
 
     def init(self, tag='v1.0'):
-        with open(os.path.join(self._root, '.hg_archival.txt'), 'w') as fp:
+        with open('.hg_archival.txt', 'w') as fp:
             fp.write(textwrap.dedent(f"""\
                 repo: {self._rev}
                 node: {self._rev}
@@ -81,7 +82,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
         with open('toast.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
-        sys.path.append(self._root)
+        sys.path.append(self.root)
         try:
             self.assertEqual(self.finalize_version(scmver), '1.1')
         finally:
@@ -132,7 +133,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
         with open('toast.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
-        sys.path.append(self._root)
+        sys.path.append(self.root)
         try:
             self.assertEqual(self.scmver(value), '1.1')
         finally:

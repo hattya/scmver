@@ -11,6 +11,7 @@ import os
 import sys
 import textwrap
 import unittest
+import unittest.mock
 
 try:
     import tomli
@@ -168,30 +169,32 @@ class CoreTestCase(SCMVerTestCase):
         rev = self.revision(b'scmver.core.stat')
 
         with self.tempdir() as path:
-            from scmver import bazaar as bzr, darcs, fossil as fsl, git, mercurial as hg, subversion as svn
-
-            parse = {m: m.parse for m in (bzr, darcs, fsl, git, hg, svn)}
-            try:
+            with unittest.mock.patch('scmver.bazaar.parse') as bzr_parse, \
+                 unittest.mock.patch('scmver.darcs.parse') as darcs_parse, \
+                 unittest.mock.patch('scmver.fossil.parse') as fsl_parse, \
+                 unittest.mock.patch('scmver.git.parse') as git_parse, \
+                 unittest.mock.patch('scmver.mercurial.parse') as hg_parse, \
+                 unittest.mock.patch('scmver.subversion.parse') as svn_parse:
                 self.assertIsNone(core.stat(path))
                 kwargs = {}
 
                 # Bazaar
                 os.mkdir(os.path.join(path, '.bzr'))
-                bzr.parse = lambda *a, **kw: None
+                bzr_parse.return_value = None
                 self.assertIsNone(core.stat(path))
 
                 info = core.SCMInfo(revision='0', branch='trunk')
-                bzr.parse = lambda *a, **kw: info
+                bzr_parse.return_value = info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['.bzr'] = False
 
                 # Darcs
                 os.mkdir(os.path.join(path, '_darcs'))
-                darcs.parse = lambda *a, **kw: None
+                darcs_parse.return_value = None
                 self.assertIsNone(core.stat(path, **kwargs))
 
                 info = core.SCMInfo(branch='scmver')
-                darcs.parse = lambda *a, **kw: info
+                darcs_parse.return_value = info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['_darcs'] = False
 
@@ -199,46 +202,43 @@ class CoreTestCase(SCMVerTestCase):
                 for name in ('.fslckout', '_FOSSIL_'):
                     with open(os.path.join(path, name), 'w'):
                         pass
-                    fsl.parse = lambda *a, **kw: None
+                    fsl_parse.return_value = None
                     self.assertIsNone(core.stat(path, **kwargs))
 
                     info = core.SCMInfo(revision=rev, branch='trunk')
-                    fsl.parse = lambda *a, **kw: info
+                    fsl_parse.return_value = info
                     self.assertEqual(core.stat(path, **kwargs), info)
                     kwargs[name] = False
 
                 # Git
                 os.mkdir(os.path.join(path, '.git'))
-                git.parse = lambda *a, **kw: None
+                git_parse.return_value = None
                 self.assertIsNone(core.stat(path, **kwargs))
 
                 info = core.SCMInfo(branch='master')
-                git.parse = lambda *a, **kw: info
+                git_parse.return_value = info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['.git'] = False
 
                 # Mercurial
                 os.mkdir(os.path.join(path, '.hg'))
-                hg.parse = lambda *a, **kw: None
+                hg_parse.return_value = None
                 self.assertIsNone(core.stat(path, **kwargs))
 
                 info = core.SCMInfo(branch='default')
-                hg.parse = lambda *a, **kw: info
+                hg_parse.return_value = info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['.hg'] = False
 
                 # Subversion
                 os.mkdir(os.path.join(path, '.svn'))
-                svn.parse = lambda *a, **kw: None
+                svn_parse.return_value = None
                 self.assertIsNone(core.stat(path, **kwargs))
 
                 info = core.SCMInfo()
-                svn.parse = lambda *a, **kw: info
+                svn_parse.return_value = info
                 self.assertEqual(core.stat(path, **kwargs), info)
                 kwargs['.svn'] = False
-            finally:
-                for m in parse:
-                    m.parse = parse[m]
 
             info = core.SCMInfo('v1.0', revision=rev, branch='default')
             with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
@@ -254,29 +254,25 @@ class CoreTestCase(SCMVerTestCase):
 
             self.assertIsNone(core.stat(path, **kwargs))
 
-        with self.tempdir() as path:
-            try:
-                import pkg_resources
-            except ImportError:
-                pass
-            else:
-                iter_entry_points = pkg_resources.iter_entry_points
-                pkg_resources.iter_entry_points = lambda *a, **kw: iter(())
-                try:
-                    self.assertIsNone(core.stat(path))
+        try:
+            with unittest.mock.patch('pkg_resources.iter_entry_points') as iter_entry_points, \
+                 self.tempdir() as path:
+                iter_entry_points.return_value = iter(())
 
-                    info = core.SCMInfo('v1.0', revision=rev, branch='default')
-                    with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
-                        fp.write(textwrap.dedent(f"""\
-                            repo: {info.revision}
-                            node: {info.revision}
-                            branch: {info.branch}
-                            tag: {info.tag}
-                        """))
-                        fp.flush()
-                    self.assertEqual(core.stat(path), info)
-                finally:
-                    pkg_resources.iter_entry_points = iter_entry_points
+                self.assertIsNone(core.stat(path))
+
+                info = core.SCMInfo('v1.0', revision=rev, branch='default')
+                with open(os.path.join(path, '.hg_archival.txt'), 'w') as fp:
+                    fp.write(textwrap.dedent(f"""\
+                        repo: {info.revision}
+                        node: {info.revision}
+                        branch: {info.branch}
+                        tag: {info.tag}
+                    """))
+                    fp.flush()
+                self.assertEqual(core.stat(path), info)
+        except ImportError:
+            pass
 
     def test_invalid_version(self):
         for v in ('', 'version', '1.0-', '1.0+', '1.0+_'):
