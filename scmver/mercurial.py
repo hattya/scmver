@@ -1,7 +1,7 @@
 #
 # scmver.mercurial
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -11,6 +11,7 @@ import re
 from typing import cast, Any, Dict, List, Optional, Tuple, Union
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -36,7 +37,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.hg':
         env = {'HGENCODING': 'utf-8'}
         out = run('identify', '-ib', cwd=root, env=env, encoding='utf-8')[0].strip().split()

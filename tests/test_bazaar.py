@@ -7,6 +7,7 @@
 #
 
 import os
+from pathlib import Path
 import textwrap
 import unittest
 import unittest.mock
@@ -19,12 +20,12 @@ from base import SCMVerTestCase
 class BazaarTestCase(SCMVerTestCase):
 
     def setUp(self):
-        self._cwd = os.getcwd()
+        self._cwd = Path.cwd()
         self._dir = self.tempdir()
-        self.root = self._dir.name
+        self.root = Path(self._dir.name)
         os.chdir(self.root)
 
-        self.branch = os.path.join(self.root, 'trunk')
+        self.branch = self.root / 'trunk'
 
     def tearDown(self):
         os.chdir(self._cwd)
@@ -43,11 +44,11 @@ class BazaarTestCase(SCMVerTestCase):
     def test_empty(self):
         for name in ('_', '.bzr'):
             with self.subTest(name=name):
-                self.assertIsNone(bzr.parse('.', name=name))
+                self.assertIsNone(bzr.parse(Path(), name=name))
 
         self.init()
-        self.assertIsNone(bzr.parse('..', name='.bzr'))
-        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(revision='0', dirty=True, branch='trunk'))
+        self.assertIsNone(bzr.parse(Path('..'), name='.bzr'))
+        self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo(revision='0', dirty=True, branch='trunk'))
 
     def test_no_tags(self):
         self.init()
@@ -55,7 +56,7 @@ class BazaarTestCase(SCMVerTestCase):
         bzr.run('add', '.')
         bzr.run('commit', '-m', '_')
 
-        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(distance=1, revision='1', branch='trunk'))
+        self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo(distance=1, revision='1', branch='trunk'))
 
     def test_simple(self):
         self.init()
@@ -64,7 +65,7 @@ class BazaarTestCase(SCMVerTestCase):
         bzr.run('commit', '-m', '_')
         bzr.run('tag', 'v1.0')
 
-        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo('v1.0', 0, '1', False, 'trunk'))
+        self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo('v1.0', 0, '1', False, 'trunk'))
 
     def test_match(self):
         self.init()
@@ -80,21 +81,21 @@ class BazaarTestCase(SCMVerTestCase):
         ):
             with self.subTest(tag=tag):
                 kwargs = {'bazaar.tag': pat}
-                self.assertEqual(bzr.parse('.', name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
+                self.assertEqual(bzr.parse(Path(), name='.bzr', **kwargs), core.SCMInfo(tag, 0, '1', False, 'trunk'))
 
     def test_i18n(self):
         self.check_locale()
 
         branch = self.branch
         try:
-            self.branch = os.path.join(os.path.dirname(self.branch), '\u30d6\u30e9\u30f3\u30c1')
+            self.branch = self.branch.parent / '\u30d6\u30e9\u30f3\u30c1'
             self.init()
             self.touch('\u30d5\u30a1\u30a4\u30eb')
             bzr.run('add', '.')
             bzr.run('commit', '-m', '_')
             bzr.run('tag', '\u30bf\u30b0')
 
-            self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo('\u30bf\u30b0', 0, '1', False, '\u30d6\u30e9\u30f3\u30c1'))
+            self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo('\u30bf\u30b0', 0, '1', False, '\u30d6\u30e9\u30f3\u30c1'))
         finally:
             self.branch = branch
 
@@ -104,11 +105,11 @@ class BazaarTestCase(SCMVerTestCase):
         bzr.run('add', '.')
         bzr.run('commit', '-m', '_')
 
-        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(distance=1, revision='1', branch='trunk'))
+        self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo(distance=1, revision='1', branch='trunk'))
 
         self.touch('eggs')
 
-        self.assertEqual(bzr.parse('.', name='.bzr'), core.SCMInfo(distance=1, revision='1', dirty=True, branch='trunk'))
+        self.assertEqual(bzr.parse(Path(), name='.bzr'), core.SCMInfo(distance=1, revision='1', dirty=True, branch='trunk'))
 
     def test_version(self):
         self.assertGreaterEqual(len(bzr.version()), 3)

@@ -7,6 +7,7 @@
 #
 
 import os
+from pathlib import Path
 import sys
 import unittest
 import unittest.mock
@@ -19,9 +20,9 @@ from base import SCMVerTestCase
 class GitTestCase(SCMVerTestCase):
 
     def setUp(self):
-        self._cwd = os.getcwd()
+        self._cwd = Path.cwd()
         self._dir = self.tempdir()
-        self.root = self._dir.name
+        self.root = Path(self._dir.name)
         os.chdir(self.root)
 
     def tearDown(self):
@@ -44,7 +45,7 @@ class GitTestCase(SCMVerTestCase):
     def test_empty(self):
         for name in ('_', '.git'):
             with self.subTest(name=name):
-                self.assertIsNone(git.parse('.', name=name))
+                self.assertIsNone(git.parse(Path(), name=name))
 
     def test_no_tags(self):
         self.init()
@@ -52,7 +53,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('add', '.')
         git.run('commit', '-m', '.')
 
-        info = git.parse('.', name='.git')
+        info = git.parse(Path(), name='.git')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 1)
         self.assertIsNotNone(info.revision)
@@ -66,7 +67,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('commit', '-m', '.')
         git.run('tag', 'v1.0')
 
-        info = git.parse('.', name='.git')
+        info = git.parse(Path(), name='.git')
         self.assertEqual(info.tag, 'v1.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -86,7 +87,7 @@ class GitTestCase(SCMVerTestCase):
             ('spam-*.*', 'spam-1.0'),
         ):
             with self.subTest(tag=tag):
-                info = git.parse('.', name='.git', **{'git.tag': pat})
+                info = git.parse(Path(), name='.git', **{'git.tag': pat})
                 self.assertEqual(info.tag, tag)
                 self.assertEqual(info.distance, 0)
                 self.assertIsNotNone(info.revision)
@@ -101,7 +102,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('commit', '-m', '.')
         git.run('tag', '\u30bf\u30b0')
 
-        info = git.parse('.', name='.git')
+        info = git.parse(Path(), name='.git')
         self.assertEqual(info.tag, '\u30bf\u30b0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -118,7 +119,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('commit', '-m', '.')
         git.run('checkout', 'HEAD~1')
 
-        info = git.parse('.', name='.git')
+        info = git.parse(Path(), name='.git')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 1)
         self.assertIsNotNone(info.revision)
@@ -129,11 +130,11 @@ class GitTestCase(SCMVerTestCase):
         self.init()
         self.touch('file')
 
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(branch='master'))
+        self.assertEqual(git.parse(Path(), name='.git'), core.SCMInfo(branch='master'))
 
         git.run('add', '.')
 
-        self.assertEqual(git.parse('.', name='.git'), core.SCMInfo(dirty=True, branch='master'))
+        self.assertEqual(git.parse(Path(), name='.git'), core.SCMInfo(dirty=True, branch='master'))
 
     def test_version(self):
         self.assertGreaterEqual(len(git.version()), 4)

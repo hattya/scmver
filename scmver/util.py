@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -12,12 +12,16 @@ import subprocess
 import sys
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from ._typing import Path
+
 
 __all__ = ['exec_', 'which']
 
 
-def exec_(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Dict[str, str]] = None,
+def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Dict[str, str]] = None,
           encoding: Optional[str] = None, errors: str = 'strict') -> Tuple[str, str]:
+    if sys.version_info < (3, 8):
+        args = tuple(os.fspath(a) for a in args)
     env = env.copy() if env else {}
     env['LC_MESSAGES'] = 'C'
     for k in ('LC_ALL', 'LANG', 'PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
@@ -26,19 +30,12 @@ def exec_(args: Sequence[str], cwd: Optional[str] = None, env: Optional[Dict[str
     if encoding is None:
         encoding = locale.getpreferredencoding(False)
 
-    if cwd:
-        path = os.getcwd()
-        os.chdir(cwd)
-    try:
-        proc = subprocess.Popen(args,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                env=env)
-        out, err = proc.communicate()
-    finally:
-        if cwd:
-            os.chdir(path)
-    return out.decode(encoding, errors), err.decode(encoding, errors)
+    proc = subprocess.run(args,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          cwd=cwd,
+                          env=env)
+    return proc.stdout.decode(encoding, errors), proc.stderr.decode(encoding, errors)
 
 
 def which(name: str) -> Optional[str]:

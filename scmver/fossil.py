@@ -1,7 +1,7 @@
 #
 # scmver.fossil
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -12,6 +12,7 @@ import sys
 from typing import cast, Any, Dict, List, Optional, Tuple
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -62,7 +63,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '.fslckout', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '.fslckout', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name in ('.fslckout', '_FOSSIL_'):
         info, changes = _status(root)
         if not info:
@@ -95,7 +96,7 @@ def parse(root: str, name: Optional[str] = '.fslckout', **kwargs: Any) -> Option
     return None
 
 
-def _status(root: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+def _status(root: Path) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
     info = {}
     changes: Dict[str, List[str]] = {}
     for l in run('status', cwd=root)[0].splitlines():
@@ -109,7 +110,7 @@ def _status(root: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
     return info, changes
 
 
-def _branch_of(root: str, closed: bool = False) -> Optional[str]:
+def _branch_of(root: Path, closed: bool = False) -> Optional[str]:
     args = ['branch', 'list']
     if closed:
         args += ('-c',)

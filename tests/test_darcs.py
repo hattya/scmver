@@ -7,6 +7,7 @@
 #
 
 import os
+from pathlib import Path
 import unittest
 import unittest.mock
 
@@ -18,14 +19,14 @@ from base import SCMVerTestCase
 class DarcsTestCase(SCMVerTestCase):
 
     def setUp(self):
-        self._cwd = os.getcwd()
+        self._cwd = Path.cwd()
         self._dir = self.tempdir()
-        self.root = self._dir.name
+        self.root = Path(self._dir.name)
         os.chdir(self.root)
 
         self.branch = 'r'
-        os.environ['DARCS_TESTING_PREFS_DIR'] = self.root
-        with open(os.path.join(self.root, 'author'), 'w') as fp:
+        os.environ['DARCS_TESTING_PREFS_DIR'] = str(self.root)
+        with (self.root / 'author').open('w') as fp:
             fp.write('scmver <scmver@example.com>\n')
             fp.flush()
 
@@ -36,7 +37,7 @@ class DarcsTestCase(SCMVerTestCase):
     def init(self):
         os.chdir(self.root)
         darcs.run('init', self.branch)
-        os.chdir(os.path.join(self.root, self.branch))
+        os.chdir(self.root / self.branch)
 
     def clone(self, branch):
         os.chdir(self.root)
@@ -50,10 +51,10 @@ class DarcsTestCase(SCMVerTestCase):
     def test_empty(self):
         for name in ('_', '_darcs'):
             with self.subTest(name=name):
-                self.assertIsNone(darcs.parse('.', name=name))
+                self.assertIsNone(darcs.parse(Path(), name=name))
 
         self.init()
-        self.assertIsNotNone(darcs.parse('.', name='_darcs'))
+        self.assertIsNotNone(darcs.parse(Path(), name='_darcs'))
 
     def test_no_tags(self):
         self.init()
@@ -61,7 +62,7 @@ class DarcsTestCase(SCMVerTestCase):
         darcs.run('add', 'file')
         darcs.run('record', '-am', '.')
 
-        info = darcs.parse('.', name='_darcs')
+        info = darcs.parse(Path(), name='_darcs')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 1)
         self.assertIsNotNone(info.revision)
@@ -75,7 +76,7 @@ class DarcsTestCase(SCMVerTestCase):
         darcs.run('record', '-am', '.')
         darcs.run('tag', 'v1.0')
 
-        info = darcs.parse('.', name='_darcs')
+        info = darcs.parse(Path(), name='_darcs')
         self.assertEqual(info.tag, 'v1.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -95,14 +96,14 @@ class DarcsTestCase(SCMVerTestCase):
             (r'spam-\d+\..+', 'spam-1.0', 0),
         ):
             with self.subTest(tag=tag):
-                info = darcs.parse('.', name='_darcs', **{'darcs.tag': pat})
+                info = darcs.parse(Path(), name='_darcs', **{'darcs.tag': pat})
                 self.assertEqual(info.tag, tag)
                 self.assertEqual(info.distance, d)
                 self.assertIsNotNone(info.revision)
                 self.assertFalse(info.dirty)
                 self.assertEqual(info.branch, self.branch)
 
-        info = darcs.parse('.', name='_darcs', **{'darcs.tag': r'__scmver__'})
+        info = darcs.parse(Path(), name='_darcs', **{'darcs.tag': r'__scmver__'})
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 3)
         self.assertIsNotNone(info.revision)
@@ -119,7 +120,7 @@ class DarcsTestCase(SCMVerTestCase):
         darcs.run('record', '-am', '.')
         darcs.run('tag', '\u30bf\u30b0')
 
-        info = darcs.parse('.', name='_darcs')
+        info = darcs.parse(Path(), name='_darcs')
         self.assertEqual(info.tag, '\u30bf\u30b0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -130,7 +131,7 @@ class DarcsTestCase(SCMVerTestCase):
         self.init()
         self.touch('file')
 
-        info = darcs.parse('.', name='_darcs')
+        info = darcs.parse(Path(), name='_darcs')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNone(info.revision)
@@ -139,7 +140,7 @@ class DarcsTestCase(SCMVerTestCase):
 
         darcs.run('add', 'file')
 
-        info = darcs.parse('.', name='_darcs')
+        info = darcs.parse(Path(), name='_darcs')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNone(info.revision)

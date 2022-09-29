@@ -5,6 +5,7 @@ Version 1.5
 -----------
 
 * Add support for pyproject.toml.
+* Add support for ``os.PathLike``.
 
 
 Version 1.4

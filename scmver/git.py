@@ -12,6 +12,7 @@ import sys
 from typing import cast, Any, Optional, Tuple, Union
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -41,7 +42,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '.git', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '.git', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.git':
         args = ['describe', '--dirty=+', '--tags', '--abbrev=40', '--long', '--always']
         if _TAG in kwargs:

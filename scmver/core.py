@@ -14,6 +14,8 @@ import sys
 import textwrap
 from typing import cast, Any, Callable, Dict, Mapping, NamedTuple, Optional, Pattern, Tuple, Union
 
+from ._typing import Path
+
 
 __all__ = ['generate', 'get_version', 'load_version', 'next_version', 'load_project', 'stat',
            'SCMInfo', 'Version', 'VersionError']
@@ -81,7 +83,7 @@ _sep_re = re.compile(r'[-._]')
 _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
 
-def generate(path: str, version: Optional[str], info: Optional['SCMInfo'] = None, template: str = _TEMPLATE) -> None:
+def generate(path: Path, version: Optional[str], info: Optional['SCMInfo'] = None, template: str = _TEMPLATE) -> None:
     kwargs: Dict[str, Any] = {'version': version}
     if info:
         kwargs.update(revision=info.revision,
@@ -90,7 +92,7 @@ def generate(path: str, version: Optional[str], info: Optional['SCMInfo'] = None
         fp.write(template.format(**kwargs))
 
 
-def get_version(root: str = '.', **kwargs: Any) -> Optional[str]:
+def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
     def take(d: Mapping[str, str], *keys: str) -> Dict[str, Any]:
         return {k: d[k] for k in d if k in keys}
 
@@ -116,13 +118,13 @@ def get_version(root: str = '.', **kwargs: Any) -> Optional[str]:
     return None
 
 
-def load_version(spec: str, path: Optional[str] = None) -> str:
+def load_version(spec: str, path: Optional[Path] = None) -> str:
     v = spec.split(':')
     if len(v) != 2:
         raise ValueError('invalid format')
 
     if path:
-        sys.path.append(path)
+        sys.path.append(str(path))
         try:
             o = importlib.import_module(v[0])
         finally:
@@ -157,7 +159,7 @@ def next_version(info: 'SCMInfo', spec: str = 'post', local: str = '{local:%Y-%m
     return str(pv) if not lv else f'{pv}+{lv}'
 
 
-def load_project(path: str = 'pyproject.toml') -> Optional[Dict[str, Any]]:
+def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
     try:
         import tomli
     except ImportError:
@@ -175,7 +177,7 @@ def load_project(path: str = 'pyproject.toml') -> Optional[Dict[str, Any]]:
     return None
 
 
-def stat(path: str, **kwargs: Any) -> Optional['SCMInfo']:
+def stat(path: Path, **kwargs: Any) -> Optional['SCMInfo']:
     impls: Tuple[Tuple[str, Callable[..., Optional[SCMInfo]]], ...]
     try:
         import pkg_resources

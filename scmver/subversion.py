@@ -1,7 +1,7 @@
 #
 # scmver.subversion
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -13,6 +13,7 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -61,7 +62,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.svn':
         info = _info(root)
         if not _is_wc_root(root, info):
@@ -106,13 +107,13 @@ def parse(root: str, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[co
     return None
 
 
-def _info(root: str) -> Dict[str, str]:
+def _info(root: Path) -> Dict[str, str]:
     out = cast(str, run('info', cwd=root)[0]).strip().splitlines()
     return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _is_wc_root(root: str, info: Mapping[str, str]) -> bool:
-    root = os.path.normpath(os.path.abspath(root))
+def _is_wc_root(root: Path, info: Mapping[str, str]) -> bool:
+    root = os.path.abspath(root)
     if os.path.normcase(root) == os.path.normcase(info.get('Working Copy Root Path', '')):
         return True
     elif info:
@@ -123,7 +124,7 @@ def _is_wc_root(root: str, info: Mapping[str, str]) -> bool:
     return False
 
 
-def _distance_of(root: str, info: Mapping[str, str], rev: Union[int, str]) -> int:
+def _distance_of(root: Path, info: Mapping[str, str], rev: Union[int, str]) -> int:
     rev = str(rev)
     i = 0
     out = cast(ET.Element, run('log', '-r', f'{info.get("Revision", "BASE")}:{rev}', '--xml', cwd=root)[0])

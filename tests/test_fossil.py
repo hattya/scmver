@@ -7,6 +7,7 @@
 #
 
 import os
+from pathlib import Path
 import unittest
 import unittest.mock
 
@@ -18,13 +19,13 @@ from base import SCMVerTestCase
 class FossilTestCase(SCMVerTestCase):
 
     def setUp(self):
-        self._cwd = os.getcwd()
+        self._cwd = Path.cwd()
         self._dir = self.tempdir()
-        self.root = self._dir.name
+        self.root = Path(self._dir.name)
         os.chdir(self.root)
 
-        self.checkout = os.path.join(self.root, 'scmver')
-        os.environ['FOSSIL_HOME'] = self.root
+        self.checkout = self.root / 'scmver'
+        os.environ['FOSSIL_HOME'] = str(self.root)
         os.environ['FOSSIL_USER'] = 'scmver'
 
     def tearDown(self):
@@ -32,9 +33,9 @@ class FossilTestCase(SCMVerTestCase):
         self._dir.cleanup()
 
     def init(self):
-        repo = f'{self.checkout}.fossil'
+        repo = self.checkout.with_suffix('.fossil')
         fsl.run('init', repo)
-        os.makedirs(self.checkout)
+        self.checkout.mkdir(parents=True)
         os.chdir(self.checkout)
         fsl.run('open', repo)
 
@@ -45,10 +46,10 @@ class FossilTestCase(SCMVerTestCase):
     def test_empty(self):
         for name in ('_', '.fslckout', '_FOSSIL_'):
             with self.subTest(name=name):
-                self.assertIsNone(fsl.parse('.', name=name))
+                self.assertIsNone(fsl.parse(Path(), name=name))
 
         self.init()
-        self.assertIsNotNone(fsl.parse('.', name='_FOSSIL_'))
+        self.assertIsNotNone(fsl.parse(Path(), name='_FOSSIL_'))
 
     def test_no_tags(self):
         self.init()
@@ -56,7 +57,7 @@ class FossilTestCase(SCMVerTestCase):
         fsl.run('add', '.')
         fsl.run('commit', '-m', '.')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 2)
         self.assertIsNotNone(info.revision)
@@ -70,7 +71,7 @@ class FossilTestCase(SCMVerTestCase):
         fsl.run('commit', '-m', '.')
         fsl.run('tag', 'add', 'v1.0', 'current')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, 'v1.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -90,14 +91,14 @@ class FossilTestCase(SCMVerTestCase):
             (r'spam-\d+\..+', 'spam-1.0'),
         ):
             with self.subTest(tag=tag):
-                info = fsl.parse('.', name='_FOSSIL_', **{'fossil.tag': pat})
+                info = fsl.parse(Path(), name='_FOSSIL_', **{'fossil.tag': pat})
                 self.assertEqual(info.tag, tag)
                 self.assertEqual(info.distance, 0)
                 self.assertIsNotNone(info.revision)
                 self.assertFalse(info.dirty)
                 self.assertEqual(info.branch, 'trunk')
 
-        info = fsl.parse('.', name='_FOSSIL_', **{'fossil.tag': r'__scmver__'})
+        info = fsl.parse(Path(), name='_FOSSIL_', **{'fossil.tag': r'__scmver__'})
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 2)
         self.assertIsNotNone(info.revision)
@@ -113,7 +114,7 @@ class FossilTestCase(SCMVerTestCase):
         fsl.run('commit', '--branch', '\u30d6\u30e9\u30f3\u30c1', '-m', '.')
         fsl.run('tag', 'add', '\u30bf\u30b0', 'current')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '\u30bf\u30b0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -126,7 +127,7 @@ class FossilTestCase(SCMVerTestCase):
         fsl.run('add', '.')
         fsl.run('commit', '--branch', 'spam', '--close', '-m', '.')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 2)
         self.assertIsNotNone(info.revision)
@@ -137,7 +138,7 @@ class FossilTestCase(SCMVerTestCase):
         self.init()
         self.touch('file')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)
@@ -146,7 +147,7 @@ class FossilTestCase(SCMVerTestCase):
 
         fsl.run('add', '.')
 
-        info = fsl.parse('.', name='_FOSSIL_')
+        info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')
         self.assertEqual(info.distance, 0)
         self.assertIsNotNone(info.revision)

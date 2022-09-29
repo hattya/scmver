@@ -1,7 +1,7 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,6 +10,7 @@ import re
 from typing import cast, Any, Dict, Optional, Tuple, Union
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -44,7 +45,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '.bzr':
         info = _version_info(root)
         if not info:
@@ -67,12 +68,12 @@ def parse(root: str, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[co
     return None
 
 
-def _version_info(root: str) -> Dict[str, str]:
+def _version_info(root: Path) -> Dict[str, str]:
     out = run('version-info', '--check-clean', cwd=root, encoding='utf-8')[0].splitlines()
     return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _distance_of(root: str, rev: Optional[Union[int, str]] = None) -> int:
+def _distance_of(root: Path, rev: Optional[Union[int, str]] = None) -> int:
     if rev is None:
         rev = 1
         off = 0

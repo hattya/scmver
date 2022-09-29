@@ -1,7 +1,7 @@
 #
 # scmver.darcs
 #
-#   Copyright (c) 2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2021-2022 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -12,6 +12,7 @@ import sys
 from typing import Any, Dict, Optional, Tuple, cast
 
 from . import core, util
+from ._typing import Path
 
 
 __all__ = ['parse', 'version', 'run']
@@ -37,7 +38,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: str, name: Optional[str] = '_darcs', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: Optional[str] = '_darcs', **kwargs: Any) -> Optional[core.SCMInfo]:
     if name == '_darcs':
         info = _show_repo(root)
         if not info:
@@ -60,12 +61,12 @@ def parse(root: str, name: Optional[str] = '_darcs', **kwargs: Any) -> Optional[
     return None
 
 
-def _show_repo(root: str) -> Dict[str, str]:
+def _show_repo(root: Path) -> Dict[str, str]:
     out = run('show', 'repo', cwd=root)[0].replace('\r', '').splitlines()
     return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _distance_of(root: str, tag: str) -> int:
+def _distance_of(root: Path, tag: str) -> int:
     return int(run('log', '--from-tag', tag, '--count', cwd=root)[0]) - 1
 
 
