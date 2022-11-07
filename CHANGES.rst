@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.5
 -----------
 
+Release date: 2022-11-07
+
 * Add support for pyproject.toml.
 * Add support for ``os.PathLike``.
 * Support Python 3.11.
