@@ -8,6 +8,9 @@ import sys
 
 from setuptools import setup, Command
 
+# ensure to load the current version
+sys.path.insert(0, os.path.dirname(__file__))
+
 import scmver
 
 
