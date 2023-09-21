@@ -12,9 +12,6 @@ or to generate a file which contains the version.
 .. image:: https://github.com/hattya/scmver/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/hattya/scmver/actions/workflows/ci.yml
 
-.. image:: https://semaphoreci.com/api/v1/hattya/scmver/branches/master/badge.svg
-   :target: https://semaphoreci.com/hattya/scmver
-
 .. image:: https://ci.appveyor.com/api/projects/status/l9flwehcgr5pxi33?svg=true
    :target: https://ci.appveyor.com/project/hattya/scmver
 
