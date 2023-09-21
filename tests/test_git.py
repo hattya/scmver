@@ -1,14 +1,13 @@
 #
 # test_git
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
 from pathlib import Path
-import sys
 import unittest
 import unittest.mock
 
@@ -27,11 +26,7 @@ class GitTestCase(SCMVerTestCase):
 
     def tearDown(self):
         os.chdir(self._cwd)
-        if sys.version_info >= (3, 8):
-            self._dir.cleanup()
-        else:
-            self._dir._finalizer.detach()
-            self.rmtree(self.root)
+        self._dir.cleanup()
 
     def init(self):
         git.run('init')

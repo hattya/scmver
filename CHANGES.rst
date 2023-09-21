@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.6
+-----------
+
+* Drop Python 3.7 support.
+
+
 Version 1.5
 -----------
 

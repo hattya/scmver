@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -20,8 +20,6 @@ __all__ = ['exec_', 'which']
 
 def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Mapping[str, str]] = None,
           encoding: Optional[str] = None, errors: str = 'strict') -> Tuple[str, str]:
-    if sys.version_info < (3, 8):
-        args = tuple(os.fspath(a) for a in args)
     env = dict(env) if env else {}
     env['LC_MESSAGES'] = 'C'
     for k in ('LC_ALL', 'LANG', 'PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
@@ -31,8 +29,7 @@ def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Mappin
         encoding = locale.getpreferredencoding(False)
 
     proc = subprocess.run(args,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
+                          capture_output=True,
                           cwd=cwd,
                           env=env)
     return proc.stdout.decode(encoding, errors), proc.stderr.decode(encoding, errors)

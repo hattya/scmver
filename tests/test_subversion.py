@@ -1,12 +1,11 @@
 #
 # test_subversion
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
-import sys
 import os
 from pathlib import Path
 import textwrap
@@ -28,11 +27,7 @@ class SubversionTestCase(SCMVerTestCase):
 
     def tearDown(self):
         os.chdir(self._cwd)
-        if sys.version_info >= (3, 8):
-            self._dir.cleanup()
-        else:
-            self._dir._finalizer.detach()
-            self.rmtree(self.root)
+        self._dir.cleanup()
 
     def create(self, name):
         util.exec_(('svnadmin', 'create', self.root / name))
