@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.7
+-----------
+
+* Improve type annotations.
+
+
 Version 1.6
 -----------
 
