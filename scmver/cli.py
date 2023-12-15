@@ -1,11 +1,12 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019-2021 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
+from __future__ import annotations
 import re
 from typing import Any, Callable, Dict, Optional, Sequence
 

@@ -1,11 +1,12 @@
 #
 # scmver.core
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
+from __future__ import annotations
 import datetime
 import importlib
 import os
@@ -80,7 +81,7 @@ _sep_re = re.compile(r'[-._]')
 _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
 
-def generate(path: Path, version: Optional[str], info: Optional['SCMInfo'] = None, template: str = _TEMPLATE) -> None:
+def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None, template: str = _TEMPLATE) -> None:
     kwargs: Dict[str, Any] = {'version': version}
     if info:
         kwargs.update(revision=info.revision,
@@ -134,7 +135,7 @@ def load_version(spec: str, path: Optional[Path] = None) -> str:
     return cast(str, o() if callable(o) else o)
 
 
-def next_version(info: 'SCMInfo', spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: Pattern[str] = _version_re) -> Optional[str]:
+def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: Pattern[str] = _version_re) -> Optional[str]:
     m = version.search(info.tag)
     if not m:
         raise VersionError('cannot parse version from SCM tag')
@@ -168,13 +169,13 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
         if 'tool' in proj:
             if 'scmver' in proj['tool']:
                 root = os.path.dirname(os.path.abspath(path))
-                scmver = cast(Dict[str, Any], proj['tool']['scmver'])
+                scmver: Dict[str, Any] = proj['tool']['scmver']
                 scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
                 return scmver
     return None
 
 
-def stat(path: Path, **kwargs: Any) -> Optional['SCMInfo']:
+def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
     impls: Tuple[Tuple[str, Callable[..., Optional[SCMInfo]]], ...]
     try:
         import pkg_resources
@@ -267,7 +268,7 @@ class Version:
     def dev(self) -> Optional[Segment]:
         return self._dev[1::2] if self._dev else None
 
-    def normalize(self) -> 'Version':
+    def normalize(self) -> Version:
         def seg(s: str, v: RawSegment, sep: str = '.') -> RawSegment:
             return (sep, s, '', v[3] if v[3] >= 0 else 0)
 

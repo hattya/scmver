@@ -1,11 +1,12 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
+from __future__ import annotations
 import re
 from typing import cast, Any, Dict, Optional, Tuple, Union
 
