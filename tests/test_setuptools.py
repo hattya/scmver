@@ -1,7 +1,7 @@
 #
 # test_setuptools
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -70,13 +70,13 @@ class SetuptoolsTestCase(SCMVerTestCase):
         setuptools.scmver(dist, 'scmver', value)
         return dist.metadata.version
 
-    @unittest.skipUnless(tomli, 'requires tomli')
+    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
     def test_finalize_version(self):
         self.init()
         self.assertIsNone(self.finalize_version(None))
         self.assertEqual(self.finalize_version({}), '1.0')
 
-    @unittest.skipUnless(tomli, 'requires tomli')
+    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
     def test_finalize_version_fallback(self):
         scmver = {'fallback': 'toast:version'}
         with open('toast.py', 'w') as fp:

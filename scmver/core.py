@@ -159,13 +159,16 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%
 
 def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
     try:
-        import tomli
+        if sys.version_info >= (3, 11):
+            import tomllib as toml
+        else:
+            import tomli as toml
     except ImportError:
         return None
 
     if os.path.isfile(path):
         with open(path, 'rb') as fp:
-            proj = tomli.load(fp)
+            proj = toml.load(fp)
         if 'tool' in proj:
             if 'scmver' in proj['tool']:
                 root = os.path.dirname(os.path.abspath(path))

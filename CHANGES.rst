@@ -5,6 +5,7 @@ Version 1.7
 -----------
 
 * Improve type annotations.
+* Add support for ``tomllib``.
 
 
 Version 1.6

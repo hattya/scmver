@@ -1,7 +1,7 @@
 #
 # test_core
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -122,7 +122,7 @@ class CoreTestCase(SCMVerTestCase):
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
 
-    @unittest.skipUnless(tomli, 'requires tomli')
+    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
     def test_load_project(self):
         with self.tempdir() as path:
             path = Path(path) / 'pyproject.toml'
@@ -160,14 +160,18 @@ class CoreTestCase(SCMVerTestCase):
             self.assertEqual(core.load_project(path), {'root': str(path.parent / '..')})
 
             # ImportError
+            if sys.version_info >= (3, 11):
+                toml = 'tomllib'
+            else:
+                toml = 'tomli'
             for m in tuple(sys.modules):
-                if m.startswith('tomli'):
+                if m.startswith(toml):
                     del sys.modules[m]
-            sys.modules['tomli'] = None
+            sys.modules[toml] = None
             try:
                 self.assertIsNone(core.load_project(path))
             finally:
-                del sys.modules['tomli']
+                del sys.modules[toml]
 
     def test_stat(self):
         rev = self.revision(b'scmver.core.stat')
