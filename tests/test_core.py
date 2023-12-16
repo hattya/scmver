@@ -263,26 +263,23 @@ class CoreTestCase(SCMVerTestCase):
 
             self.assertIsNone(core.stat(path, **kwargs))
 
-        try:
-            with unittest.mock.patch('pkg_resources.iter_entry_points') as iter_entry_points, \
-                 self.tempdir() as path:
-                path = Path(path)
-                iter_entry_points.return_value = iter(())
+        with self.tempdir() as path, \
+             unittest.mock.patch('importlib.metadata.entry_points') as entry_points:
+            path = Path(path)
+            entry_points.return_value = {}
 
-                self.assertIsNone(core.stat(path))
+            self.assertIsNone(core.stat(path))
 
-                info = core.SCMInfo('v1.0', revision=rev, branch='default')
-                with (path / '.hg_archival.txt').open('w') as fp:
-                    fp.write(textwrap.dedent(f"""\
-                        repo: {info.revision}
-                        node: {info.revision}
-                        branch: {info.branch}
-                        tag: {info.tag}
-                    """))
-                    fp.flush()
-                self.assertEqual(core.stat(path), info)
-        except ImportError:
-            pass
+            info = core.SCMInfo('v1.0', revision=rev, branch='default')
+            with (path / '.hg_archival.txt').open('w') as fp:
+                fp.write(textwrap.dedent(f"""\
+                    repo: {info.revision}
+                    node: {info.revision}
+                    branch: {info.branch}
+                    tag: {info.tag}
+                """))
+                fp.flush()
+            self.assertEqual(core.stat(path), info)
 
     def test_invalid_version(self):
         for v in ('', 'version', '1.0-', '1.0+', '1.0+_'):

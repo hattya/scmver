@@ -179,14 +179,14 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
 
 
 def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
-    impls: Tuple[Tuple[str, Callable[..., Optional[SCMInfo]]], ...]
-    try:
-        import pkg_resources
+    import importlib.metadata
 
-        impls = tuple((ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('scmver.parse'))
-        if not impls:
-            raise ImportError
-    except ImportError:
+    impls: Tuple[Tuple[str, Callable[..., Optional[SCMInfo]]], ...]
+    if sys.version_info >= (3, 10):
+        impls = tuple((ep.name, ep.load()) for ep in importlib.metadata.entry_points(group='scmver.parse'))
+    else:
+        impls = tuple(set((ep.name, ep.load()) for ep in importlib.metadata.entry_points().get('scmver.parse', [])))
+    if not impls:
         from . import bazaar as bzr, darcs, fossil as fsl, git, mercurial as hg, subversion as svn
 
         impls = (('.bzr', bzr.parse), ('_darcs', darcs.parse), ('.fslckout', fsl.parse), ('_FOSSIL_', fsl.parse),
