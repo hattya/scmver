@@ -130,7 +130,7 @@ class CoreTestCase(SCMVerTestCase):
                 fp.write(textwrap.dedent("""\
                     [build-system]
                     requires = [
-                        "setuptools >= 42",
+                        "setuptools >= 42.0",
                         "scmver[toml] >= 1.5",
                     ]
                     build-backend = "setuptools.build_meta"

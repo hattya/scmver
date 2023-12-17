@@ -27,8 +27,8 @@ Installation
    $ pip install scmver
 
 
-Requiements
------------
+Requirements
+------------
 
 - Python 3.8+
 - setuptools
@@ -44,7 +44,7 @@ pyproject.toml
 
    [build-system]
    requires = [
-       "setuptools >= 42",
+       "setuptools >= 42.0",
        "scmver[toml] >= 1.5",
    ]
    build-backend = "setuptools.build_meta"
@@ -99,7 +99,7 @@ root
   Default: ``'.'``
 
 spec
-  A version specifier to construct the public version indentifiers. It will be
+  A version specifier to construct the public version identifiers. It will be
   incremented by the number of commits from the latest tag.
 
   ``major``
@@ -169,7 +169,7 @@ fallback
 
   ``string``
     It is in the ``'package.module:some.attribute'`` format
-    (ex: ``'scmver:version'``).
+    (ex: ``'scmver:__version__'``).
 
   ``list``
     It consists of a ``string`` which is described above, and a path to import
@@ -215,4 +215,4 @@ subversion.tags
 License
 -------
 
-scmver is distrutbuted under the terms of the MIT License.
+scmver is distributed under the terms of the MIT License.

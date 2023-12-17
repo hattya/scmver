@@ -7,6 +7,7 @@
 #
 
 from __future__ import annotations
+import collections.abc
 import datetime
 import importlib
 import os
@@ -105,14 +106,10 @@ def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
         fallback = kwargs['fallback']
         if callable(fallback):
             return cast(str, fallback())
-        else:
-            if isinstance(fallback, str):
-                spec = fallback
-                path = None
-            else:
-                spec = fallback[0]
-                path = os.path.join(root, fallback[1])
-            return load_version(spec, path)
+        elif isinstance(fallback, str):
+            return load_version(fallback)
+        elif isinstance(fallback, collections.abc.Sequence):
+            return load_version(fallback[0], os.path.join(root, fallback[1]))
     return None
 
 
@@ -166,16 +163,19 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
     except ImportError:
         return None
 
-    if os.path.isfile(path):
-        with open(path, 'rb') as fp:
-            proj = toml.load(fp)
-        if 'tool' in proj:
-            if 'scmver' in proj['tool']:
-                root = os.path.dirname(os.path.abspath(path))
-                scmver: Dict[str, Any] = proj['tool']['scmver']
-                scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
-                return scmver
-    return None
+    if not os.path.isfile(path):
+        return None
+    with open(path, 'rb') as fp:
+        proj = toml.load(fp)
+    if not ('tool' in proj
+            and 'scmver' in proj['tool']):
+        return None
+
+    scmver: Dict[str, Any] = proj['tool']['scmver']
+    # root
+    root = os.path.dirname(os.path.abspath(path))
+    scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
+    return scmver
 
 
 def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:

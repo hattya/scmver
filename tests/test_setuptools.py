@@ -50,7 +50,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
             fp.write(textwrap.dedent("""\
                 [build-system]
                 requires = [
-                    "setuptools >= 42",
+                    "setuptools >= 42.0",
                     "scmver[toml] >= 1.5",
                 ]
                 build-backend = "setuptools.build_meta"
@@ -58,7 +58,12 @@ class SetuptoolsTestCase(SCMVerTestCase):
             if scmver is not None:
                 fp.write('[tool.scmver]\n')
                 for k, v in scmver.items():
-                    fp.write(f'{k} = {v!r}\n')
+                    if isinstance(v, str):
+                        fp.write(f'{k} = "{v}"\n')
+                    elif isinstance(v, list):
+                        fp.write(f'{k} = [')
+                        fp.write(', '.join(f'"{v}"' for v in v))
+                        fp.write(']\n')
             fp.flush()
 
         dist = distutils.dist.Distribution()
@@ -129,8 +134,8 @@ class SetuptoolsTestCase(SCMVerTestCase):
         value = {'fallback': lambda: '1.0'}
         self.assertEqual(self.scmver(value), '1.0')
 
-        value = {'fallback': 'toast:version'}
-        with open('toast.py', 'w') as fp:
+        value = {'fallback': 'bacon:version'}
+        with open('bacon.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
         sys.path.append(self.root)
@@ -139,8 +144,11 @@ class SetuptoolsTestCase(SCMVerTestCase):
         finally:
             sys.path.pop()
 
-        value = {'fallback': ['beans:version', '.']}
-        with open('beans.py', 'w') as fp:
+        value = {'fallback': ['sausage:version', '.']}
+        with open('sausage.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.2'))
             fp.flush()
         self.assertEqual(self.scmver(value), '1.2')
+
+        value = {'fallback': None}
+        self.assertIsNone(self.scmver(value))

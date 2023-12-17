@@ -10,7 +10,10 @@ from __future__ import annotations
 import re
 from typing import Any, Callable, Dict, Optional, Sequence
 
-import click
+try:
+    import click
+except ImportError:
+    raise SystemExit("Missing dependencies, try 'pip install scmver[cli]'")
 
 from . import __version__, core
 
