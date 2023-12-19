@@ -175,6 +175,14 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
     # root
     root = os.path.dirname(os.path.abspath(path))
     scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
+    # write-to
+    if 'write-to' in scmver:
+        scmver['write_to'] = scmver.pop('write-to')
+    # fallback
+    if ('fallback' in scmver
+        and isinstance(scmver['fallback'], collections.abc.Mapping)):
+        fallback = scmver['fallback']
+        scmver['fallback'] = [fallback['attr'], fallback['path']] if 'path' in fallback else fallback['attr']
     return scmver
 
 

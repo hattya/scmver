@@ -159,6 +159,20 @@ class CoreTestCase(SCMVerTestCase):
                 fp.flush()
             self.assertEqual(core.load_project(path), {'root': str(path.parent / '..')})
 
+            with path.open('a') as fp:
+                fp.write(textwrap.dedent("""\
+                    write_to = "snake_case"
+                """))
+                fp.flush()
+            self.assertEqual(core.load_project(path), {'root': str(path.parent / '..'), 'write_to': 'snake_case'})
+
+            with path.open('a') as fp:
+                fp.write(textwrap.dedent("""\
+                    write-to = "kebab-case"
+                """))
+                fp.flush()
+            self.assertEqual(core.load_project(path), {'root': str(path.parent / '..'), 'write_to': 'kebab-case'})
+
             # ImportError
             if sys.version_info >= (3, 11):
                 toml = 'tomllib'

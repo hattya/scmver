@@ -50,6 +50,19 @@ pyproject.toml
    build-backend = "setuptools.build_meta"
 
    [tool.scmver]
+   spec = "micro"
+   write-to = "scmver/__version__.py"
+   fallback = {attr = "scmver:__version__"}
+
+write-to
+  An alias for ``write_to``, but it takes precedence.
+
+fallback
+  ``attr``
+    A ``string`` which is described in ``fallback`` in Configuration_.
+
+  ``path`` (optional)
+    A path to import the module.
 
 See Configuration_ for key/value pairs.
 

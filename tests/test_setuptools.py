@@ -64,6 +64,10 @@ class SetuptoolsTestCase(SCMVerTestCase):
                         fp.write(f'{k} = [')
                         fp.write(', '.join(f'"{v}"' for v in v))
                         fp.write(']\n')
+                    elif isinstance(v, dict):
+                        fp.write(f'{k} = {{')
+                        fp.write(', '.join(f'{k} = "{v}"' for k, v in v.items()))
+                        fp.write('}\n')
             fp.flush()
 
         dist = distutils.dist.Distribution()
@@ -98,6 +102,22 @@ class SetuptoolsTestCase(SCMVerTestCase):
             fp.write(core._TEMPLATE.format(version='1.2'))
             fp.flush()
         self.assertEqual(self.finalize_version(scmver), '1.2')
+
+        scmver = {'fallback': {'attr': 'bacon:version'}}
+        with open('bacon.py', 'w') as fp:
+            fp.write(core._TEMPLATE.format(version='1.3'))
+            fp.flush()
+        sys.path.append(self.root)
+        try:
+            self.assertEqual(self.finalize_version(scmver), '1.3')
+        finally:
+            sys.path.pop()
+
+        scmver = {'fallback': {'attr': 'sausage:version', 'path': '.'}}
+        with open('sausage.py', 'w') as fp:
+            fp.write(core._TEMPLATE.format(version='1.4'))
+            fp.flush()
+        self.assertEqual(self.finalize_version(scmver), '1.4')
 
     def test_scmver_with_boolean(self):
         self.init()
@@ -134,8 +154,8 @@ class SetuptoolsTestCase(SCMVerTestCase):
         value = {'fallback': lambda: '1.0'}
         self.assertEqual(self.scmver(value), '1.0')
 
-        value = {'fallback': 'bacon:version'}
-        with open('bacon.py', 'w') as fp:
+        value = {'fallback': 'tomato:version'}
+        with open('tomato.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
         sys.path.append(self.root)
@@ -144,8 +164,8 @@ class SetuptoolsTestCase(SCMVerTestCase):
         finally:
             sys.path.pop()
 
-        value = {'fallback': ['sausage:version', '.']}
-        with open('sausage.py', 'w') as fp:
+        value = {'fallback': ['lobster:version', '.']}
+        with open('lobster.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.2'))
             fp.flush()
         self.assertEqual(self.scmver(value), '1.2')
