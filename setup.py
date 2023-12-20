@@ -50,25 +50,4 @@ setup(version=scmver.get_version(**{
           'write_to': os.path.join('scmver', '__version__.py'),
           'fallback': 'scmver:__version__',
       }),
-      cmdclass=cmdclass,
-      entry_points={
-          'console_scripts': [
-              'scmver = scmver.cli:run [cli]',
-          ],
-          'distutils.setup_keywords': [
-              'scmver = scmver.setuptools:scmver'
-          ],
-          'scmver.parse': [
-              '.bzr = scmver.bazaar:parse',
-              '_darcs = scmver.darcs:parse',
-              '.fslckout = scmver.fossil:parse',
-              '_FOSSIL_ = scmver.fossil:parse',
-              '.git = scmver.git:parse',
-              '.hg = scmver.mercurial:parse',
-              '.hg_archival.txt = scmver.mercurial:parse',
-              '.svn = scmver.subversion:parse',
-          ],
-          'setuptools.finalize_distribution_options': [
-              'scmver = scmver.setuptools:finalize_version',
-          ],
-      })
+      cmdclass=cmdclass)

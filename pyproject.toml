@@ -1,6 +1,90 @@
 [build-system]
 requires = [
-    "setuptools >= 42.0",
+    "setuptools >= 61.0",
     "scmver",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "scmver"
+description = "A package version manager based on SCM tags"
+readme = "README.rst"
+authors = [
+    {name = "Akinori Hattori", email = "hattya@gmail.com"},
+]
+license = {"text" = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Version Control",
+    "Topic :: System :: Software Distribution",
+    "Topic :: Utilities",
+]
+requires-python = ">= 3.8"
+dynamic = [
+    "version",
+]
+
+[project.scripts]
+scmver = "scmver.cli:run"
+
+[project.entry-points."distutils.setup_keywords"]
+scmver = "scmver.setuptools:scmver"
+
+[project.entry-points."scmver.parse"]
+".bzr" = "scmver.bazaar:parse"
+"_darcs" = "scmver.darcs:parse"
+".fslckout" = "scmver.fossil:parse"
+"_FOSSIL_" = "scmver.fossil:parse"
+".git" = "scmver.git:parse"
+".hg" = "scmver.mercurial:parse"
+".hg_archival.txt" = "scmver.mercurial:parse"
+".svn" = "scmver.subversion:parse"
+
+[project.entry-points."setuptools.finalize_distribution_options"]
+scmver = "scmver.setuptools:finalize_version"
+
+[project.optional-dependencies]
+cli = [
+    "click",
+]
+toml = [
+    "tomli; python_version < '3.11'",
+]
+
+[project.urls]
+Homepage = "https://github.com/hattya/scmver"
+
+[tool.setuptools]
+include-package-data = false
+packages = ["scmver"]
+
+[tool.setuptools.package-data]
+scmver = [
+    "py.typed",
+]
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "*/__main__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except ImportError:",
+]
+
+[tool.mypy]
+implicit_reexport = true
+strict = true

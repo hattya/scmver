@@ -1,9 +1,0 @@
-[run]
-branch = True
-omit =
-    */__main__.py
-
-[report]
-exclude_lines =
-    pragma: no cover
-    except ImportError:
