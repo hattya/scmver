@@ -1,7 +1,7 @@
 #
 # test_setuptools
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -87,18 +87,16 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
     @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
     def test_finalize_version_fallback(self):
+        os.mkdir('src')
+
         scmver = {'fallback': 'toast:version'}
         with open('toast.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
-        sys.path.append(self.root)
-        try:
-            self.assertEqual(self.finalize_version(scmver), '1.1')
-        finally:
-            sys.path.pop()
+        self.assertEqual(self.finalize_version(scmver), '1.1')
 
-        scmver = {'fallback': ['beans:version', '.']}
-        with open('beans.py', 'w') as fp:
+        scmver = {'fallback': ['beans:version', 'src']}
+        with open(os.path.join('src', 'beans.py'), 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.2'))
             fp.flush()
         self.assertEqual(self.finalize_version(scmver), '1.2')
@@ -107,14 +105,10 @@ class SetuptoolsTestCase(SCMVerTestCase):
         with open('bacon.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.3'))
             fp.flush()
-        sys.path.append(self.root)
-        try:
-            self.assertEqual(self.finalize_version(scmver), '1.3')
-        finally:
-            sys.path.pop()
+        self.assertEqual(self.finalize_version(scmver), '1.3')
 
-        scmver = {'fallback': {'attr': 'sausage:version', 'path': '.'}}
-        with open('sausage.py', 'w') as fp:
+        scmver = {'fallback': {'attr': 'sausage:version', 'path': 'src'}}
+        with open(os.path.join('src', 'sausage.py'), 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.4'))
             fp.flush()
         self.assertEqual(self.finalize_version(scmver), '1.4')
@@ -151,6 +145,8 @@ class SetuptoolsTestCase(SCMVerTestCase):
             self.assertEqual(fp.read(), value['template'].format(version='1.0'))
 
     def test_scmver_fallback(self):
+        os.mkdir('src')
+
         value = {'fallback': lambda: '1.0'}
         self.assertEqual(self.scmver(value), '1.0')
 
@@ -158,14 +154,10 @@ class SetuptoolsTestCase(SCMVerTestCase):
         with open('tomato.py', 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.1'))
             fp.flush()
-        sys.path.append(self.root)
-        try:
-            self.assertEqual(self.scmver(value), '1.1')
-        finally:
-            sys.path.pop()
+        self.assertEqual(self.scmver(value), '1.1')
 
-        value = {'fallback': ['lobster:version', '.']}
-        with open('lobster.py', 'w') as fp:
+        value = {'fallback': ['lobster:version', 'src']}
+        with open(os.path.join('src', 'lobster.py'), 'w') as fp:
             fp.write(core._TEMPLATE.format(version='1.2'))
             fp.flush()
         self.assertEqual(self.scmver(value), '1.2')

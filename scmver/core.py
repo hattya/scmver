@@ -1,7 +1,7 @@
 #
 # scmver.core
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -107,7 +107,7 @@ def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
         if callable(fallback):
             return cast(str, fallback())
         elif isinstance(fallback, str):
-            return load_version(fallback)
+            return load_version(fallback, root)
         elif isinstance(fallback, collections.abc.Sequence):
             return load_version(fallback[0], os.path.join(root, fallback[1]))
     return None
