@@ -7,6 +7,7 @@ Version 1.7
 * Improve type annotations.
 * Add support for ``tomllib``.
 * Add ``root`` to ``sys.path`` when ``fallback`` is a string.
+* Generate unspecified values as empty strings.
 
 
 Version 1.6

@@ -83,10 +83,10 @@ _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
 
 def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None, template: str = _TEMPLATE) -> None:
-    kwargs: Dict[str, Any] = {'version': version}
+    kwargs: Dict[str, Any] = {'version': version or ''}
     if info:
-        kwargs.update(revision=info.revision,
-                      branch=info.branch)
+        kwargs.update(revision=info.revision or '',
+                      branch=info.branch or '')
     with open(path, 'w') as fp:
         fp.write(template.format(**kwargs))
 

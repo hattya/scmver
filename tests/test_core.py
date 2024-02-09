@@ -1,7 +1,7 @@
 #
 # test_core
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -39,6 +39,11 @@ class CoreTestCase(SCMVerTestCase):
     def test_generate(self):
         rev = self.revision(b'scmver.core.generate')
         info = core.SCMInfo(revision=rev, branch='master')
+        template = textwrap.dedent("""\
+            version = '{version}'
+            revision = '{revision}'
+            branch = '{branch}'
+        """)
 
         with self.tempfile() as path:
             path = Path(path)
@@ -50,14 +55,20 @@ class CoreTestCase(SCMVerTestCase):
                     version = '1.0'
                 """))
 
-            core.generate(path, '1.0', info, template=textwrap.dedent("""\
-                version = '{version}'
-                revision = '{revision}'
-            """))
+            core.generate(path, '1.0', info, template)
             with path.open() as fp:
                 self.assertEqual(fp.read(), textwrap.dedent(f"""\
                     version = '1.0'
-                    revision = '{rev}'
+                    revision = '{info.revision}'
+                    branch = '{info.branch}'
+                """))
+
+            core.generate(path, None, core.SCMInfo(), template)
+            with path.open() as fp:
+                self.assertEqual(fp.read(), textwrap.dedent("""\
+                    version = ''
+                    revision = ''
+                    branch = ''
                 """))
 
     def test_load_version(self):
