@@ -147,7 +147,7 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%
         lv = local.format(distance=info.distance,
                           revision=info.revision,
                           branch=info.branch,
-                          utc=datetime.datetime.utcnow(),
+                          utc=datetime.datetime.now(datetime.timezone.utc),
                           local=datetime.datetime.now())
     else:
         lv = None

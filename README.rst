@@ -153,7 +153,7 @@ local
     - ``{distance}``
     - ``{revision}``
     - ``{branch}``
-    - ``{utc}``      - Return value of ``datetime.datetime.utcnow()``
+    - ``{utc}``      - Return value of ``datetime.datetime.now(datetime.timezone.utc)``
     - ``{local}``    - Return value of ``datetime.datetime.now()``
 
   ``callable object``

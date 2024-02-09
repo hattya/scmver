@@ -1,9 +1,7 @@
 *.egg-info/
-.eggs/
 .tox/
 build/
 dist/
-*.egg
 *.py?
 *.sw?
 .coverage

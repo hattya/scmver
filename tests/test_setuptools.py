@@ -6,12 +6,12 @@
 #   SPDX-License-Identifier: MIT
 #
 
-import distutils.dist
 import os
 import sys
 import textwrap
 import unittest
 
+from setuptools import Distribution
 try:
     import tomli
 except ImportError:
@@ -70,12 +70,12 @@ class SetuptoolsTestCase(SCMVerTestCase):
                         fp.write('}\n')
             fp.flush()
 
-        dist = distutils.dist.Distribution()
+        dist = Distribution()
         setuptools.finalize_version(dist)
         return dist.metadata.version
 
     def scmver(self, value):
-        dist = distutils.dist.Distribution()
+        dist = Distribution()
         setuptools.scmver(dist, 'scmver', value)
         return dist.metadata.version
 

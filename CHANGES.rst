@@ -13,7 +13,7 @@ Version 1.7
 Version 1.6
 -----------
 
-Reelase date: 2023-10-14
+Release date: 2023-10-14
 
 * Drop Python 3.7 support.
 * Support Python 3.12.
