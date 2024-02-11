@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.7
 -----------
 
+Release date: 2024-02-11
+
 * Improve type annotations.
 * Add support for ``tomllib``.
 * Add ``root`` to ``sys.path`` when ``fallback`` is a string.
