@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools >= 61.0",
-    "scmver",
+    "scmver[toml] >= 1.7",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -74,6 +74,11 @@ packages = [
 scmver = [
     "py.typed",
 ]
+
+[tool.scmver]
+spec = "micro"
+write-to = "scmver/__version__.py"
+fallback = {attr = "scmver:__version__"}
 
 [tool.coverage.run]
 branch = true

@@ -40,12 +40,7 @@ class test(Command):
 
 
 setup(
-    version=scmver.get_version(**{
-        'root': os.path.dirname(os.path.abspath(__file__)),
-        'spec': 'micro',
-        'write_to': os.path.join('scmver', '__version__.py'),
-        'fallback': 'scmver:__version__',
-    }),
+    version=scmver.get_version(**scmver.load_project()),
     cmdclass={
         'test': test,
     },
