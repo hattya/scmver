@@ -96,8 +96,7 @@ def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
         return {k: d[k] for k in d if k in keys}
 
     root = os.path.abspath(root)
-    info = stat(root, **{k: kwargs[k] for k in kwargs if k.endswith('.tag')})
-    if info:
+    if info := stat(root, **{k: kwargs[k] for k in kwargs if k.endswith('.tag')}):
         version = next_version(info, **take(kwargs, 'spec', 'local', 'version'))
         if 'write_to' in kwargs:
             generate(os.path.join(root, kwargs['write_to']), version, info, **take(kwargs, 'template'))
@@ -205,8 +204,7 @@ def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
         for name, parse in impls:
             if (kwargs.get(name, True)
                 and os.path.exists(os.path.join(path, name))):
-                info = parse(path, name=name, **kwargs)
-                if info:
+                if info := parse(path, name=name, **kwargs):
                     return info
         p, path = path, os.path.dirname(path)
         if path == p:

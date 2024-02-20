@@ -1,7 +1,7 @@
 #
 # scmver.subversion
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -167,8 +167,7 @@ def version() -> Tuple[Union[int, str], ...]:
 
 
 def run(*args: str, **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
-    xml = '--xml' in args
-    if xml:
+    if xml := '--xml' in args:
         kwargs['encoding'] = 'utf-8'
     out, err = util.exec_((cast(str, util.which('svn')), '--non-interactive') + args, **kwargs)
     return ET.fromstring(out.encode('utf-8')) if xml else out, err

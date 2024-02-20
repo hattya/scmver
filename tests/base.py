@@ -1,7 +1,7 @@
 #
 # base
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -30,8 +30,7 @@ class SCMVerTestCase(unittest.TestCase):
         locale.setlocale(locale.LC_ALL, cls._lc)
 
     def check_locale(self):
-        encoding = locale.getpreferredencoding(False)
-        if encoding.lower() not in ('cp932', 'euc-jp', 'utf-8'):
+        if locale.getpreferredencoding(False).lower() not in ('cp932', 'euc-jp', 'utf-8'):
             self.skipTest('requires UTF-8 or Japanese locale')
 
     def tempdir(self):

@@ -51,7 +51,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
                 [build-system]
                 requires = [
                     "setuptools >= 42.0",
-                    "scmver[toml] >= 1.5",
+                    "scmver[toml] >= 1.7",
                 ]
                 build-backend = "setuptools.build_meta"
             """))
