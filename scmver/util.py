@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -16,7 +16,7 @@ from typing import List, Mapping, Optional, Sequence, Tuple
 from ._typing import Path
 
 
-__all__ = ['exec_', 'which']
+__all__ = ['exec_', 'command', 'which']
 
 
 def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Mapping[str, str]] = None,
@@ -34,6 +34,15 @@ def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Mappin
                           cwd=cwd,
                           env=env)
     return proc.stdout.decode(encoding, errors), proc.stderr.decode(encoding, errors)
+
+
+def command(name: str, *args: str) -> str:
+    if (path := which(name)) is not None:
+        return path
+    for a in args:
+        if (path := which(a)) is not None:
+            return path
+    raise OSError(f'command not found: {name}')
 
 
 def which(name: str) -> Optional[str]:

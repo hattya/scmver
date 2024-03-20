@@ -33,6 +33,16 @@ class UtilTestCase(SCMVerTestCase):
         self.assertEqual(out, '\U0001d70b = 3.14')
         self.assertEqual(err, '')
 
+    def test_command(self):
+        sh = 'sh' if sys.platform != 'win32' else 'cmd'
+        self.assertEqual(Path(util.command(sh)).stem, sh)
+        self.assertEqual(Path(util.command('__scmver.util__', sh)).stem, sh)
+
+        with self.assertRaisesRegex(OSError, r': __scmver\.util__$'):
+            util.command('__scmver.util__')
+        with self.assertRaisesRegex(OSError, r': __scmver\.util__$'):
+            util.command('__scmver.util__', '__test_util__')
+
     def test_which(self):
         sh = 'sh' if sys.platform != 'win32' else 'cmd'
         self.assertNotEqual(util.which(sh), sh)

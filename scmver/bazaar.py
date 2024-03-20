@@ -1,7 +1,7 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -102,4 +102,4 @@ def version() -> Tuple[Union[int, str], ...]:
 
 
 def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
-    return util.exec_((cast(str, util.which('brz') or util.which('bzr')),) + args, **kwargs)
+    return util.exec_((util.command('brz', 'bzr'),) + args, **kwargs)

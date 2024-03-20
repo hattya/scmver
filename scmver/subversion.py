@@ -169,5 +169,5 @@ def version() -> Tuple[Union[int, str], ...]:
 def run(*args: str, **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
     if xml := '--xml' in args:
         kwargs['encoding'] = 'utf-8'
-    out, err = util.exec_((cast(str, util.which('svn')), '--non-interactive') + args, **kwargs)
+    out, err = util.exec_((util.command('svn'), '--non-interactive') + args, **kwargs)
     return ET.fromstring(out.encode('utf-8')) if xml else out, err

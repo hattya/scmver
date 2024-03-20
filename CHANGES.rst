@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.8
+-----------
+
+* Improve error handling when a command is not found.
+
+
 Version 1.7
 -----------
 

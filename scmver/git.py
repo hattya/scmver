@@ -1,7 +1,7 @@
 #
 # scmver.git
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import cast, Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 from . import core, util
 from ._typing import Path
@@ -91,4 +91,4 @@ def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     kwargs['env'] = env
     if sys.platform == 'win32':
         kwargs['encoding'] = 'utf-8'
-    return util.exec_((cast(str, util.which('git')), '-c', 'core.quotepath=false') + args, **kwargs)
+    return util.exec_((util.command('git'), '-c', 'core.quotepath=false') + args, **kwargs)

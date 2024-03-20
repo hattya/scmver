@@ -1,7 +1,7 @@
 #
 # scmver.mercurial
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -115,4 +115,4 @@ def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     else:
         env = _env
     kwargs['env'] = env
-    return util.exec_((cast(str, util.which('hg')),) + args, **kwargs)
+    return util.exec_((util.command('hg'),) + args, **kwargs)

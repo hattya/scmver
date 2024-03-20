@@ -1,7 +1,7 @@
 #
 # scmver.fossil
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import cast, Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from . import core, util
 from ._typing import Path
@@ -138,4 +138,4 @@ def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
         env.update(kwargs['env'])
     kwargs['env'] = env
     kwargs['encoding'] = 'utf-8'
-    return util.exec_((cast(str, util.which('fossil')),) + args, **kwargs)
+    return util.exec_((util.command('fossil'),) + args, **kwargs)

@@ -1,7 +1,7 @@
 #
 # scmver.darcs
 #
-#   Copyright (c) 2021-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2021-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -85,4 +85,4 @@ def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
     if 'env' in kwargs:
         env.update(kwargs['env'])
     kwargs['env'] = env
-    return util.exec_((cast(str, util.which('darcs')),) + args, **kwargs)
+    return util.exec_((util.command('darcs'),) + args, **kwargs)
