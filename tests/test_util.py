@@ -1,7 +1,7 @@
 #
 # test_util
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -36,4 +36,5 @@ class UtilTestCase(SCMVerTestCase):
     def test_which(self):
         sh = 'sh' if sys.platform != 'win32' else 'cmd'
         self.assertNotEqual(util.which(sh), sh)
+        self.assertEqual(Path(util.which(sh)).stem, sh)
         self.assertIsNone(util.which('__scmver.util__'))

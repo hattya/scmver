@@ -1,7 +1,7 @@
 #
 # test_git
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -32,6 +32,7 @@ class GitTestCase(SCMVerTestCase):
         git.run('init')
         git.run('config', 'user.name', 'scmver')
         git.run('config', 'user.email', 'scmver@example.com')
+        git.run('config', 'core.fsmonitor', 'false')
 
     def touch(self, path):
         with open(path, 'w'):
