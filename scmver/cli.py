@@ -1,7 +1,7 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019-2023 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -138,8 +138,7 @@ def cli() -> None:
 @cli.command()
 @click.argument('file',
                 type=click.Path(dir_okay=False, writable=True),
-                required=True,
-                nargs=1)
+                required=True)
 @_options(_next_version_options)
 @click.option('-t', '--template',
               help='File template.')

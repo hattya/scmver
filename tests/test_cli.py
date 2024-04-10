@@ -1,7 +1,7 @@
 #
 # test_cli
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -23,7 +23,10 @@ except ImportError:
 from base import SCMVerTestCase
 
 
-@unittest.skipUnless(click, 'requires click')
+requires_click = unittest.skipUnless(click, 'requires click')
+
+
+@requires_click
 @unittest.mock.patch('scmver.core.stat')
 class CLITestCase(SCMVerTestCase):
 
@@ -232,7 +235,7 @@ class CLITestCase(SCMVerTestCase):
         """))
 
 
-@unittest.skipUnless(click, 'requires click')
+@requires_click
 class GroupTestCase(SCMVerTestCase):
 
     def group(self):

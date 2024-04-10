@@ -7,18 +7,12 @@
 #
 
 import os
-import sys
 import textwrap
-import unittest
 
 from setuptools import Distribution
-try:
-    import tomli
-except ImportError:
-    tomli = None
 
 from scmver import core, setuptools
-from base import SCMVerTestCase
+from base import requires_tomli, SCMVerTestCase
 
 
 class SetuptoolsTestCase(SCMVerTestCase):
@@ -79,38 +73,38 @@ class SetuptoolsTestCase(SCMVerTestCase):
         setuptools.scmver(dist, 'scmver', value)
         return dist.metadata.version
 
-    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
+    def write_template(self, fp, **kwargs):
+        fp.write(core._TEMPLATE.format(**kwargs))
+        fp.flush()
+
+    @requires_tomli
     def test_finalize_version(self):
         self.init()
         self.assertIsNone(self.finalize_version(None))
         self.assertEqual(self.finalize_version({}), '1.0')
 
-    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
+    @requires_tomli
     def test_finalize_version_fallback(self):
         os.mkdir('src')
 
         scmver = {'fallback': 'toast:version'}
         with open('toast.py', 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.1'))
-            fp.flush()
+            self.write_template(fp, version='1.1')
         self.assertEqual(self.finalize_version(scmver), '1.1')
 
         scmver = {'fallback': ['beans:version', 'src']}
         with open(os.path.join('src', 'beans.py'), 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.2'))
-            fp.flush()
+            self.write_template(fp, version='1.2')
         self.assertEqual(self.finalize_version(scmver), '1.2')
 
         scmver = {'fallback': {'attr': 'bacon:version'}}
         with open('bacon.py', 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.3'))
-            fp.flush()
+            self.write_template(fp, version='1.3')
         self.assertEqual(self.finalize_version(scmver), '1.3')
 
         scmver = {'fallback': {'attr': 'sausage:version', 'path': 'src'}}
         with open(os.path.join('src', 'sausage.py'), 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.4'))
-            fp.flush()
+            self.write_template(fp, version='1.4')
         self.assertEqual(self.finalize_version(scmver), '1.4')
 
     def test_scmver_with_boolean(self):
@@ -152,14 +146,12 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
         value = {'fallback': 'tomato:version'}
         with open('tomato.py', 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.1'))
-            fp.flush()
+            self.write_template(fp, version='1.1')
         self.assertEqual(self.scmver(value), '1.1')
 
         value = {'fallback': ['lobster:version', 'src']}
         with open(os.path.join('src', 'lobster.py'), 'w') as fp:
-            fp.write(core._TEMPLATE.format(version='1.2'))
-            fp.flush()
+            self.write_template(fp, version='1.2')
         self.assertEqual(self.scmver(value), '1.2')
 
         value = {'fallback': None}

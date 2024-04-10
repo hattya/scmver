@@ -14,13 +14,8 @@ import textwrap
 import unittest
 import unittest.mock
 
-try:
-    import tomli
-except ImportError:
-    tomli = None
-
 from scmver import core
-from base import SCMVerTestCase
+from base import requires_tomli, SCMVerTestCase
 
 
 class CoreTestCase(SCMVerTestCase):
@@ -35,6 +30,10 @@ class CoreTestCase(SCMVerTestCase):
         self.assertEqual(repr(v), f'<Version({version.upper()})>')
         self.assertEqual(str(v), version.upper())
         self.assertEqual(str(v.normalize()), normalized)
+
+    def write_sync(self, fp, data):
+        fp.write(textwrap.dedent(data))
+        fp.flush()
 
     def test_generate(self):
         rev = self.revision(b'scmver.core.generate')
@@ -75,18 +74,17 @@ class CoreTestCase(SCMVerTestCase):
         self.assertEqual(core.load_version('os:name'), os.name)
         self.assertEqual(core.load_version('os:getcwd'), os.getcwd())
 
-        data = textwrap.dedent("""\
+        data = """\
             name = __name__
             def file():
                 return __file__
-        """)
+        """
 
         with self.tempdir() as path:
             path = Path(path)
             spam = path / 'spam.py'
             with spam.open('w') as fp:
-                fp.write(data)
-                fp.flush()
+                self.write_sync(fp, data)
             self.assertEqual(core.load_version('spam:name', path), 'spam')
             self.assertEqual(core.load_version('spam:file', path), str(spam))
 
@@ -97,8 +95,7 @@ class CoreTestCase(SCMVerTestCase):
             eggs.parent.mkdir(parents=True)
             for p in (eggs, ham):
                 with p.open('w') as fp:
-                    fp.write(data)
-                    fp.flush()
+                    self.write_sync(fp, data)
             self.assertEqual(core.load_version('eggs:name', path), 'eggs')
             self.assertEqual(core.load_version('eggs:file', path), str(eggs))
             self.assertEqual(core.load_version('eggs.ham:name', path), 'eggs.ham')
@@ -133,56 +130,61 @@ class CoreTestCase(SCMVerTestCase):
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
 
-    @unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
+    @requires_tomli
+    @unittest.mock.patch.dict('sys.modules')
     def test_load_project(self):
         with self.tempdir() as path:
             path = Path(path) / 'pyproject.toml'
             with path.open('w') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     [build-system]
                     requires = [
                         "setuptools >= 42.0",
                         "scmver[toml] >= 1.7",
                     ]
                     build-backend = "setuptools.build_meta"
-                """))
-                fp.flush()
+                """)
             self.assertIsNone(core.load_project(path))
 
             with path.open('a') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     [tool._]
-                """))
-                fp.flush()
+                """)
             self.assertIsNone(core.load_project(path))
 
             with path.open('a') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     [tool.scmver]
-                """))
-                fp.flush()
-            self.assertEqual(core.load_project(path), {'root': str(path.parent)})
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent),
+            })
 
             with path.open('a') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     root = ".."
-                """))
-                fp.flush()
-            self.assertEqual(core.load_project(path), {'root': str(path.parent / '..')})
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent / '..'),
+            })
 
             with path.open('a') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     write_to = "snake_case"
-                """))
-                fp.flush()
-            self.assertEqual(core.load_project(path), {'root': str(path.parent / '..'), 'write_to': 'snake_case'})
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent / '..'),
+                'write_to': 'snake_case',
+            })
 
             with path.open('a') as fp:
-                fp.write(textwrap.dedent("""\
+                self.write_sync(fp, """\
                     write-to = "kebab-case"
-                """))
-                fp.flush()
-            self.assertEqual(core.load_project(path), {'root': str(path.parent / '..'), 'write_to': 'kebab-case'})
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent / '..'),
+                'write_to': 'kebab-case',
+            })
 
             # ImportError
             if sys.version_info >= (3, 11):
@@ -193,10 +195,7 @@ class CoreTestCase(SCMVerTestCase):
                 if m.startswith(toml):
                     del sys.modules[m]
             sys.modules[toml] = None
-            try:
-                self.assertIsNone(core.load_project(path))
-            finally:
-                del sys.modules[toml]
+            self.assertIsNone(core.load_project(path))
 
     def test_stat(self):
         rev = self.revision(b'scmver.core.stat')
@@ -276,13 +275,12 @@ class CoreTestCase(SCMVerTestCase):
 
             info = core.SCMInfo('v1.0', revision=rev, branch='default')
             with (path / '.hg_archival.txt').open('w') as fp:
-                fp.write(textwrap.dedent(f"""\
+                self.write_sync(fp, f"""\
                     repo: {info.revision}
                     node: {info.revision}
                     branch: {info.branch}
                     tag: {info.tag}
-                """))
-                fp.flush()
+                """)
             self.assertEqual(core.stat(path, **kwargs), info)
             kwargs['.hg_archival.txt'] = False
 
@@ -297,13 +295,12 @@ class CoreTestCase(SCMVerTestCase):
 
             info = core.SCMInfo('v1.0', revision=rev, branch='default')
             with (path / '.hg_archival.txt').open('w') as fp:
-                fp.write(textwrap.dedent(f"""\
+                self.write_sync(fp, f"""\
                     repo: {info.revision}
                     node: {info.revision}
                     branch: {info.branch}
                     tag: {info.tag}
-                """))
-                fp.flush()
+                """)
             self.assertEqual(core.stat(path), info)
 
     def test_invalid_version(self):
@@ -439,27 +436,27 @@ class CoreTestCase(SCMVerTestCase):
 
     def test_update_pre_version(self):
         for g, e in (
-                ('1a', '1a1'), ('1a0', '1a1'),
-                ('1b', '1b1'), ('1b0', '1b1'),
-                ('1rc', '1rc1'), ('1rc0', '1rc1'),
+            ('1a', '1a1'), ('1a0', '1a1'),
+            ('1b', '1b1'), ('1b0', '1b1'),
+            ('1rc', '1rc1'), ('1rc0', '1rc1'),
         ):
             v = core.Version(g)
             v.update('pre')
             self.assertEqual(str(v), e)
 
         for g, e in (
-                ('1a', '1a'), ('1a0', '1a0'),
-                ('1b', '1b'), ('1b0', '1b0'),
-                ('1rc', '1rc'), ('1rc0', '1rc0'),
+            ('1a', '1a'), ('1a0', '1a0'),
+            ('1b', '1b'), ('1b0', '1b0'),
+            ('1rc', '1rc'), ('1rc0', '1rc0'),
         ):
             v = core.Version(g)
             v.update('pre', 0)
             self.assertEqual(str(v), e)
 
         for g, e in (
-                ('1a0', '1a'), ('1a1', '1a0'),
-                ('1b0', '1b'), ('1b1', '1b0'),
-                ('1rc0', '1rc'), ('1rc1', '1rc0'),
+            ('1a0', '1a'), ('1a1', '1a0'),
+            ('1b0', '1b'), ('1b1', '1b0'),
+            ('1rc0', '1rc'), ('1rc1', '1rc0'),
         ):
             v = core.Version(g)
             v.update('pre', -1)
