@@ -186,6 +186,26 @@ class CoreTestCase(SCMVerTestCase):
                 'write_to': 'kebab-case',
             })
 
+            with path.open('a') as fp:
+                self.write_sync(fp, """\
+                    "scm.tag" = "v*.*"
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent / '..'),
+                'write_to': 'kebab-case',
+                'scm.tag': 'v*.*',
+            })
+
+            with path.open('a') as fp:
+                self.write_sync(fp, """\
+                    scm.tag = "spam-*.*"
+                """)
+            self.assertEqual(core.load_project(path), {
+                'root': str(path.parent / '..'),
+                'write_to': 'kebab-case',
+                'scm.tag': 'spam-*.*',
+            })
+
             # ImportError
             if sys.version_info >= (3, 11):
                 toml = 'tomllib'

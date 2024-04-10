@@ -182,6 +182,10 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
         and isinstance(scmver['fallback'], collections.abc.Mapping)):
         fallback = scmver['fallback']
         scmver['fallback'] = [fallback['attr'], fallback['path']] if 'path' in fallback else fallback['attr']
+    # flatten tables
+    for k in tuple(scmver):
+        if isinstance(scmver[k], collections.abc.Mapping):
+            scmver.update({f'{k}.{sk}': v for sk, v in scmver.pop(k).items()})
     return scmver
 
 
