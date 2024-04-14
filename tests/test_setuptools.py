@@ -156,3 +156,44 @@ class SetuptoolsTestCase(SCMVerTestCase):
 
         value = {'fallback': None}
         self.assertIsNone(self.scmver(value))
+
+    def test_load_cfg(self):
+        path = 'setup.cfg'
+
+        self.assertIsNone(setuptools.load_cfg(path))
+
+        with open(path, 'w') as fp:
+            self.write_sync(fp, """\
+                []
+            """)
+            self.assertEqual(setuptools.load_cfg(path), {})
+
+        with open(path, 'w') as fp:
+            self.write_sync(fp, """\
+                spec = micro
+            """)
+            self.assertEqual(setuptools.load_cfg(path), {})
+
+        with open(path, 'w') as fp:
+            self.write_sync(fp, """\
+                [scmver]
+                spec = micro
+                fallback = __version__:version, scmver
+            """)
+            self.assertEqual(setuptools.load_cfg(path), {
+                'spec': 'micro',
+                'fallback': ['__version__:version', 'scmver']
+            })
+
+        with open(path, 'w') as fp:
+            self.write_sync(fp, """\
+                [scmver]
+                spec = micro
+                fallback =
+                    __version__:version
+                    scmver
+            """)
+            self.assertEqual(setuptools.load_cfg(path), {
+                'spec': 'micro',
+                'fallback': ['__version__:version', 'scmver']
+            })

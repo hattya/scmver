@@ -15,7 +15,7 @@ try:
 except ImportError:
     raise SystemExit("Missing dependencies, try 'pip install scmver[cli]'")
 
-from . import __version__, core
+from . import __version__, core, setuptools
 
 
 __all__ = ['run']
@@ -146,6 +146,7 @@ def cli() -> None:
 def generate(file: str, template: Optional[str], **opts: Any) -> None:
     """Generate a file with the version."""
 
+    opts = _merge_config(opts)
     info = _stat('.', **opts)
     if not info:
         return
@@ -176,6 +177,7 @@ def load(spec: str, path: Optional[str]) -> None:
 def next(**opts: Any) -> None:
     """Calculate a next version from the version."""
 
+    opts = _merge_config(opts)
     info = _stat('.', **opts)
     if not info:
         return
@@ -188,6 +190,7 @@ def next(**opts: Any) -> None:
 def stat(**opts: Any) -> None:
     """Show the working directory status."""
 
+    opts = _merge_config(opts)
     info = _stat('.', **opts)
     if not info:
         return
@@ -200,6 +203,16 @@ def stat(**opts: Any) -> None:
     click.echo(f'Dirty:    {info.dirty}')
     if info.branch:
         click.echo(f'Branch:   {info.branch}')
+
+
+def _merge_config(a: Dict[str, Any]) -> Dict[str, Any]:
+    a = a.copy()
+    b = setuptools.load_cfg() or core.load_project() or {}
+    for k, v in b.items():
+        if (v and
+            not a.get(k)):
+            a[k] = v
+    return a
 
 
 def _next_version(info: core.SCMInfo, **opts: Any) -> Optional[str]:

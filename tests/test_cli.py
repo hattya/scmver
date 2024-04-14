@@ -50,8 +50,10 @@ class CLITestCase(SCMVerTestCase):
             self.assertEqual(rv.exit_code, 0)
             self.assertEqual(os.stat(path).st_size, 0)
 
-    def test_generate_with_defaults(self, stat):
+    @unittest.mock.patch('scmver.core.load_project')
+    def test_generate_with_defaults(self, load_project, stat):
         rev = self.revision(b'scmver.cli.generate')
+        load_project.return_value = None
 
         stat.return_value = core.SCMInfo('v1.0', 0, rev, False, 'master')
         with self.tempfile() as path:
@@ -113,8 +115,10 @@ class CLITestCase(SCMVerTestCase):
         self.assertEqual(rv.exit_code, 0)
         self.assertEqual(rv.output, '')
 
-    def test_next_with_defaults(self, stat):
+    @unittest.mock.patch('scmver.core.load_project')
+    def test_next_with_defaults(self, load_project, stat):
         rev = self.revision(b'scmver.cli.next')
+        load_project.return_value = None
 
         stat.return_value = core.SCMInfo('v1.0', 0, rev, False, 'master')
         rv = self.invoke(['next'])

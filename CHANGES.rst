@@ -6,6 +6,7 @@ Version 1.8
 
 * Improve error handling when a command is not found.
 * Improve support for dotted options in pyproject.toml.
+* Load setup.cfg or pyproject.toml in scmver script.
 
 
 Version 1.7

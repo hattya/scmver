@@ -31,10 +31,6 @@ class CoreTestCase(SCMVerTestCase):
         self.assertEqual(str(v), version.upper())
         self.assertEqual(str(v.normalize()), normalized)
 
-    def write_sync(self, fp, data):
-        fp.write(textwrap.dedent(data))
-        fp.flush()
-
     def test_generate(self):
         rev = self.revision(b'scmver.core.generate')
         info = core.SCMInfo(revision=rev, branch='master')

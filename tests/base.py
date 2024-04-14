@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 import tempfile
+import textwrap
 import unittest
 
 try:
@@ -67,3 +68,7 @@ class SCMVerTestCase(unittest.TestCase):
             else:
                 raise
         shutil.rmtree(path, onerror=onerror)
+
+    def write_sync(self, fp, data):
+        fp.write(textwrap.dedent(data))
+        fp.flush()

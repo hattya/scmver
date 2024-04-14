@@ -7,14 +7,16 @@
 #
 
 from __future__ import annotations
-from typing import Any
+import configparser
+from typing import Any, Dict, Optional
 
 import setuptools
 
 from . import core
+from ._typing import Path
 
 
-__all__ = ['finalize_version', 'scmver']
+__all__ = ['finalize_version', 'scmver', 'load_cfg']
 
 
 def finalize_version(dist: setuptools.Distribution) -> None:
@@ -31,3 +33,21 @@ def scmver(dist: setuptools.Distribution, key: str, value: Any) -> None:
         value = value()
 
     dist.metadata.version = core.get_version(**value)
+
+
+def load_cfg(path: Path = 'setup.cfg') -> Optional[Dict[str, Any]]:
+    scmver: Dict[str, Any] = {}
+    try:
+        cp = configparser.ConfigParser()
+        if not cp.read(path):
+            return None
+
+        for k, v in cp.items('scmver'):
+            if k == 'fallback':
+                scmver[k] = [s for v in (v.splitlines() if '\n' in v else v.split(','))
+                             if (s := v.strip())]
+            else:
+                scmver[k] = v
+    except configparser.Error:
+        pass
+    return scmver
