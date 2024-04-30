@@ -1,7 +1,7 @@
 #
 # test_bazaar
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -17,7 +17,14 @@ from base import SCMVerTestCase
 
 
 @unittest.skipUnless(util.which('bzr') or util.which('brz'), 'requires Bazaar or Breezy')
+@unittest.mock.patch.dict('os.environ')
 class BazaarTestCase(SCMVerTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        if brz := util.which('brz'):
+            os.environ['PATH'] = f'{Path(brz).resolve().parent}{os.pathsep}{os.environ["PATH"]}'
 
     def setUp(self):
         self._cwd = Path.cwd()
