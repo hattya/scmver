@@ -61,9 +61,11 @@ jobs:
       - name: Install VCSes on Windows
         if: matrix.platform == 'Windows'
         run: |
-          choco install -y fossil
+          aria2c -q -o fossil.zip 'https://www.fossil-scm.org/home/uv/fossil-w64-2.24.zip'
+          Expand-Archive fossil.zip $env:ProgramFiles\Fossil
+          echo $env:ProgramFiles\Fossil >>$env:GITHUB_PATH
 
-          $uri = 'http://darcs.net/binaries/windows/'
+          $uri = 'https://darcs.net/binaries/windows/'
           mkdir $env:ProgramFiles\Darcs | Out-Null
           Invoke-WebRequest ($uri + ((Invoke-WebRequest $uri).Links | Where-Object { $_.Href -match '\.exe$' } | Select-Object -Last 1).Href) -OutFile $env:ProgramFiles\Darcs\darcs.exe
           echo $env:ProgramFiles\Darcs >>$env:GITHUB_PATH
