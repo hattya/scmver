@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.8
 -----------
 
+Release date: 2024-10-12
+
 * Improve error handling when a command is not found.
 * Improve support for dotted options in pyproject.toml.
 * Load setup.cfg or pyproject.toml in scmver script.
