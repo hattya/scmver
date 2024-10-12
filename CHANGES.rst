@@ -8,6 +8,7 @@ Version 1.8
 * Improve support for dotted options in pyproject.toml.
 * Load setup.cfg or pyproject.toml in scmver script.
 * Drop Python 3.8 support.
+* Support Python 3.13.
 
 
 Version 1.7
