@@ -7,9 +7,10 @@
 #
 
 from __future__ import annotations
+from collections.abc import Mapping
 import os
 import re
-from typing import cast, Any, Dict, Mapping, Optional, Tuple, Union
+from typing import cast, Any, Optional, Union
 import urllib.parse
 import xml.etree.ElementTree as ET
 
@@ -108,9 +109,9 @@ def parse(root: Path, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[c
     return None
 
 
-def _info(root: Path) -> Dict[str, str]:
+def _info(root: Path) -> dict[str, str]:
     out = cast(str, run('info', cwd=root)[0]).strip().splitlines()
-    return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
+    return dict(cast(tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
 def _is_wc_root(root: Path, info: Mapping[str, str]) -> bool:
@@ -151,13 +152,13 @@ def _rel(key: str, default: str, **kwargs: str) -> str:
     return '/' + os.path.normpath(kwargs.get(key, default)).replace(os.sep, '/').strip('/') + '/'
 
 
-def version() -> Tuple[Union[int, str], ...]:
+def version() -> tuple[Union[int, str], ...]:
     out = cast(str, run('--version')[0]).splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if m.group('pre_s'):
         s = m.group('pre_s')
         v += (s[0] if s != 'rc' else s, int(m.group('pre_n')))
@@ -166,7 +167,7 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[Union[str, ET.Element], str]:
+def run(*args: str, **kwargs: Any) -> tuple[Union[str, ET.Element], str]:
     if xml := '--xml' in args:
         kwargs['encoding'] = 'utf-8'
     out, err = util.exec_((util.command('svn'), '--non-interactive') + args, **kwargs)

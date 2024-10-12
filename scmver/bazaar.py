@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 import re
-from typing import cast, Any, Dict, Optional, Tuple, Union
+from typing import cast, Any, Optional, Union
 
 from . import core, util
 from ._typing import Path
@@ -69,9 +69,9 @@ def parse(root: Path, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[c
     return None
 
 
-def _version_info(root: Path) -> Dict[str, str]:
+def _version_info(root: Path) -> dict[str, str]:
     out = run('version-info', '--check-clean', cwd=root, encoding='utf-8')[0].splitlines()
-    return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
+    return dict(cast(tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
 def _distance_of(root: Path, rev: Optional[Union[int, str]] = None) -> int:
@@ -83,13 +83,13 @@ def _distance_of(root: Path, rev: Optional[Union[int, str]] = None) -> int:
     return len(run('log', '-r', f'{rev}..', '-n', '0', '--line', cwd=root)[0].splitlines()) - off
 
 
-def version() -> Tuple[Union[int, str], ...]:
+def version() -> tuple[Union[int, str], ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('pre_s'):
@@ -101,5 +101,5 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> tuple[str, str]:
     return util.exec_((util.command('brz', 'bzr'),) + args, **kwargs)

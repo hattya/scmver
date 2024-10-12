@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import cast, Any, Optional
 
 from . import core, util
 from ._typing import Path
@@ -20,7 +20,7 @@ __all__ = ['parse', 'version', 'run']
 
 _TAG = 'darcs.tag'
 # environ
-_env: Tuple[str, ...] = ('DARCS_TESTING_PREFS_DIR', 'DARCS_TMPDIR', 'TMPDIR')
+_env: tuple[str, ...] = ('DARCS_TESTING_PREFS_DIR', 'DARCS_TMPDIR', 'TMPDIR')
 if sys.platform == 'win32':
     _env += ('APPDATA', 'TMP', 'TEMP')
 else:
@@ -62,16 +62,16 @@ def parse(root: Path, name: Optional[str] = '_darcs', **kwargs: Any) -> Optional
     return None
 
 
-def _show_repo(root: Path) -> Dict[str, str]:
+def _show_repo(root: Path) -> dict[str, str]:
     out = run('show', 'repo', cwd=root)[0].replace('\r', '').splitlines()
-    return dict(cast(Tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
+    return dict(cast(tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
 def _distance_of(root: Path, tag: str) -> int:
     return int(run('log', '--from-tag', tag, '--count', cwd=root)[0]) - 1
 
 
-def version() -> Tuple[int, ...]:
+def version() -> tuple[int, ...]:
     m = _version_re.match(run('--version')[0].strip())
     if (not m
         or not m.group('release')):
@@ -80,7 +80,7 @@ def version() -> Tuple[int, ...]:
     return tuple(map(int, m.group('release').split('.')))
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> tuple[str, str]:
     env = {k: os.environ[k] for k in _env if k in os.environ}
     if 'env' in kwargs:
         env.update(kwargs['env'])

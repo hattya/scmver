@@ -7,14 +7,14 @@
 #
 
 from __future__ import annotations
-import collections.abc
+from collections.abc import Callable, Mapping, Sequence
 import datetime
 import importlib
 import os
 import re
 import sys
 import textwrap
-from typing import cast, Any, Callable, Dict, Mapping, NamedTuple, Optional, Pattern, Tuple, Union
+from typing import cast, Any, NamedTuple, Optional, Union
 
 from ._typing import Path, Segment, RawSegment
 
@@ -83,7 +83,7 @@ _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
 
 def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None, template: str = _TEMPLATE) -> None:
-    kwargs: Dict[str, Any] = {'version': version or ''}
+    kwargs: dict[str, Any] = {'version': version or ''}
     if info:
         kwargs.update(revision=info.revision or '',
                       branch=info.branch or '')
@@ -92,7 +92,7 @@ def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None,
 
 
 def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
-    def take(d: Mapping[str, str], *keys: str) -> Dict[str, Any]:
+    def take(d: Mapping[str, str], *keys: str) -> dict[str, Any]:
         return {k: d[k] for k in d if k in keys}
 
     root = os.path.abspath(root)
@@ -107,7 +107,7 @@ def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
             return cast(str, fallback())
         elif isinstance(fallback, str):
             return load_version(fallback, root)
-        elif isinstance(fallback, collections.abc.Sequence):
+        elif isinstance(fallback, Sequence):
             return load_version(fallback[0], os.path.join(root, fallback[1]))
     return None
 
@@ -131,7 +131,7 @@ def load_version(spec: str, path: Optional[Path] = None) -> str:
     return cast(str, o() if callable(o) else o)
 
 
-def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: Pattern[str] = _version_re) -> Optional[str]:
+def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: re.Pattern[str] = _version_re) -> Optional[str]:
     m = version.search(info.tag)
     if not m:
         raise VersionError('cannot parse version from SCM tag')
@@ -153,7 +153,7 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%
     return str(pv) if not lv else f'{pv}+{lv}'
 
 
-def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
+def load_project(path: Path = 'pyproject.toml') -> Optional[dict[str, Any]]:
     try:
         if sys.version_info >= (3, 11):
             import tomllib as toml
@@ -170,7 +170,7 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
             and 'scmver' in proj['tool']):
         return None
 
-    scmver: Dict[str, Any] = proj['tool']['scmver']
+    scmver: dict[str, Any] = proj['tool']['scmver']
     # root
     root = os.path.dirname(os.path.abspath(path))
     scmver['root'] = os.path.join(root, scmver['root']) if 'root' in scmver else root
@@ -179,12 +179,12 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
         scmver['write_to'] = scmver.pop('write-to')
     # fallback
     if ('fallback' in scmver
-        and isinstance(scmver['fallback'], collections.abc.Mapping)):
+        and isinstance(scmver['fallback'], Mapping)):
         fallback = scmver['fallback']
         scmver['fallback'] = [fallback['attr'], fallback['path']] if 'path' in fallback else fallback['attr']
     # flatten tables
     for k in tuple(scmver):
-        if isinstance(scmver[k], collections.abc.Mapping):
+        if isinstance(scmver[k], Mapping):
             scmver.update({f'{k}.{sk}': v for sk, v in scmver.pop(k).items()})
     return scmver
 
@@ -192,7 +192,7 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[Dict[str, Any]]:
 def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
     import importlib.metadata
 
-    impls: Tuple[Tuple[str, Callable[..., Optional[SCMInfo]]], ...]
+    impls: tuple[tuple[str, Callable[..., Optional[SCMInfo]]], ...]
     if sys.version_info >= (3, 10):
         impls = tuple((ep.name, ep.load()) for ep in importlib.metadata.entry_points(group='scmver.parse'))
     else:
@@ -249,7 +249,7 @@ class Version:
         return f'<{self.__class__.__name__}({self})>'
 
     def __str__(self) -> str:
-        def seg(v: RawSegment) -> Tuple[str, ...]:
+        def seg(v: RawSegment) -> tuple[str, ...]:
             return (v[0], v[1], v[2], str(v[3]) if v[3] >= 0 else '')
 
         buf = []

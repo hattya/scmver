@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from . import core, util
 from ._typing import Path
@@ -20,7 +20,7 @@ __all__ = ['parse', 'version', 'run']
 
 _TAG = 'git.tag'
 # environ
-_env: Tuple[str, ...] = ('GIT_CONFIG_NOSYSTEM', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_GLOBAL', 'HOME', 'XDG_CONFIG_HOME')
+_env: tuple[str, ...] = ('GIT_CONFIG_NOSYSTEM', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_GLOBAL', 'HOME', 'XDG_CONFIG_HOME')
 
 _version_re = re.compile(r"""
     \A
@@ -67,12 +67,12 @@ def parse(root: Path, name: Optional[str] = '.git', **kwargs: Any) -> Optional[c
     return None
 
 
-def version() -> Tuple[Union[int, str], ...]:
+def version() -> tuple[Union[int, str], ...]:
     m = _version_re.match(run('--version')[0].strip())
     if not m:
         return ()
 
-    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 4:
         v += (0,) * (4 - len(v))
     if m.group('alpha'):
@@ -84,7 +84,7 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> tuple[str, str]:
     env = {k: os.environ[k] for k in _env if k in os.environ}
     if 'env' in kwargs:
         env.update(kwargs['env'])

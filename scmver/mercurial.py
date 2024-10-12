@@ -9,7 +9,7 @@
 from __future__ import annotations
 import os
 import re
-from typing import cast, Any, Dict, List, Optional, Tuple, Union
+from typing import cast, Any, Optional, Union
 
 from . import core, util
 from ._typing import Path
@@ -63,11 +63,11 @@ def parse(root: Path, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[co
             # NOTE: tags should also be encoded in UTF-8, but they are
             # encoded in the local encoding...
             with open(p, encoding='utf-8') as fp:
-                meta: Dict[str, Union[str, List[str]]] = {'tag': []}
+                meta: dict[str, Union[str, list[str]]] = {'tag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
                     if k in ('tag', 'latesttag'):
-                        cast(List[str], meta['tag']).append(v)
+                        cast(list[str], meta['tag']).append(v)
                     else:
                         meta[k] = v
         except OSError:
@@ -91,13 +91,13 @@ def _tag_of(tag: str) -> str:
     return tag if tag != 'null' else '0.0'
 
 
-def version() -> Tuple[Union[int, str], ...]:
+def version() -> tuple[Union[int, str], ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: Tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('alpha'):
@@ -108,11 +108,9 @@ def version() -> Tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> tuple[str, str]:
+    env = _env
     if 'env' in kwargs:
-        env = _env.copy()
-        env.update(kwargs['env'])
-    else:
-        env = _env
+        env |= kwargs['env']
     kwargs['env'] = env
     return util.exec_((util.command('hg'),) + args, **kwargs)

@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from . import core, util
 from ._typing import Path
@@ -20,7 +20,7 @@ __all__ = ['parse', 'version', 'run']
 
 _TAG = 'fossil.tag'
 # environ
-_env: Tuple[str, ...] = ('FOSSIL_HOME', 'FOSSIL_USER', 'SQLITE_TMPDIR', 'USER', 'LOGNAME', 'USERNAME', 'TMPDIR')
+_env: tuple[str, ...] = ('FOSSIL_HOME', 'FOSSIL_USER', 'SQLITE_TMPDIR', 'USER', 'LOGNAME', 'USERNAME', 'TMPDIR')
 if sys.platform == 'win32':
     _env += ('LOCALAPPDATA', 'APPDATA', 'HOMEDRIVE', 'HOMEPATH', 'TMP', 'TEMP', 'USERPROFILE')
 else:
@@ -97,9 +97,9 @@ def parse(root: Path, name: Optional[str] = '.fslckout', **kwargs: Any) -> Optio
     return None
 
 
-def _status(root: Path) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+def _status(root: Path) -> tuple[dict[str, str], dict[str, list[str]]]:
     info = {}
-    changes: Dict[str, List[str]] = {}
+    changes: dict[str, list[str]] = {}
     for l in run('status', cwd=root)[0].splitlines():
         v = l.split(None, 1)
         if v[0].endswith(':'):
@@ -123,7 +123,7 @@ def _branch_of(root: Path, closed: bool = False) -> Optional[str]:
     return None
 
 
-def version() -> Tuple[int, ...]:
+def version() -> tuple[int, ...]:
     m = _version_re.match(run('version')[0].strip())
     if (not m
         or not m.group('release')):
@@ -132,7 +132,7 @@ def version() -> Tuple[int, ...]:
     return tuple(map(int, m.group('release').split('.')))
 
 
-def run(*args: str, **kwargs: Any) -> Tuple[str, str]:
+def run(*args: str, **kwargs: Any) -> tuple[str, str]:
     env = {k: os.environ[k] for k in _env if k in os.environ}
     if 'env' in kwargs:
         env.update(kwargs['env'])

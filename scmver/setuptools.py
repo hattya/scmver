@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 import configparser
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import setuptools
 
@@ -35,8 +35,8 @@ def scmver(dist: setuptools.Distribution, key: str, value: Any) -> None:
     dist.metadata.version = core.get_version(**value)
 
 
-def load_cfg(path: Path = 'setup.cfg') -> Optional[Dict[str, Any]]:
-    scmver: Dict[str, Any] = {}
+def load_cfg(path: Path = 'setup.cfg') -> Optional[dict[str, Any]]:
+    scmver: dict[str, Any] = {}
     try:
         cp = configparser.ConfigParser()
         if not cp.read(path):

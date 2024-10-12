@@ -7,8 +7,9 @@
 #
 
 from __future__ import annotations
+from collections.abc import Callable, Sequence
 import re
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Optional
 
 try:
     import click
@@ -46,7 +47,7 @@ class _Local(click.ParamType):
     CO_VARARGS = 0x0004
 
     def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
-        m: Dict[str, Any] = {}
+        m: dict[str, Any] = {}
         try:
             exec(value, {}, m)
         except (NameError, SyntaxError):
@@ -205,14 +206,8 @@ def stat(**opts: Any) -> None:
         click.echo(f'Branch:   {info.branch}')
 
 
-def _merge_config(a: Dict[str, Any]) -> Dict[str, Any]:
-    a = a.copy()
-    b = setuptools.load_cfg() or core.load_project() or {}
-    for k, v in b.items():
-        if (v and
-            not a.get(k)):
-            a[k] = v
-    return a
+def _merge_config(a: dict[str, Any]) -> dict[str, Any]:
+    return (setuptools.load_cfg() or core.load_project() or {}) | a
 
 
 def _next_version(info: core.SCMInfo, **opts: Any) -> Optional[str]:
