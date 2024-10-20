@@ -95,3 +95,27 @@ exclude_lines = [
 [tool.mypy]
 implicit_reexport = true
 strict = true
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "UP",
+    "B0",
+    "C4",
+]
+ignore = [
+    "E74",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scmver/__init__.py" = [
+    "F403",
+]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true

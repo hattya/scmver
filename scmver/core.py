@@ -196,7 +196,7 @@ def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
     if sys.version_info >= (3, 10):
         impls = tuple((ep.name, ep.load()) for ep in importlib.metadata.entry_points(group='scmver.parse'))
     else:
-        impls = tuple(set((ep.name, ep.load()) for ep in importlib.metadata.entry_points().get('scmver.parse', [])))
+        impls = tuple({(ep.name, ep.load()) for ep in importlib.metadata.entry_points().get('scmver.parse', [])})
     if not impls:
         from . import bazaar as bzr, darcs, fossil as fsl, git, mercurial as hg, subversion as svn
 
