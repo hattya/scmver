@@ -18,7 +18,7 @@ jobs:
           - py313
         include:
           - platform: Linux
-            os: ubuntu-latest
+            os: ubuntu-22.04
           - platform: macOS
             os: macos-latest
           - platform: Windows
@@ -70,7 +70,7 @@ jobs:
       - name: Test
         run: tox
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: TOXENV
