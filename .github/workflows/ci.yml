@@ -43,11 +43,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -63,7 +63,8 @@ jobs:
       - name: Install VCSes on Windows
         if: matrix.platform == 'Windows'
         run: |
-          choco install -y fossil
+          choco install -y fossil hg
+          echo $env:ProgramFiles\Mercurial >>$env:GITHUB_PATH
 
           $uri = 'https://darcs.net/binaries/windows/'
           mkdir $env:ProgramFiles\Darcs | Out-Null
