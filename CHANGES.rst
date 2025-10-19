@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.9
+-----------
+
+* Support Python 3.14.
+
+
 Version 1.8
 -----------
 
