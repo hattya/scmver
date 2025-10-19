@@ -1,7 +1,7 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -9,7 +9,7 @@
 from __future__ import annotations
 from collections.abc import Callable, Sequence
 import re
-from typing import Any, Optional
+from typing import Any, TypeAlias
 
 try:
     import click
@@ -21,16 +21,16 @@ from . import __version__, core, setuptools
 
 __all__ = ['run']
 
-F = Callable[..., Any]
+F: TypeAlias = Callable[..., Any]
 
 
-def run(args: Optional[Sequence[str]] = None) -> None:
+def run(args: Sequence[str] | None = None) -> None:
     cli(args=args, prog_name=__package__)
 
 
 class _Group(click.Group):
 
-    def get_command(self, ctx: click.Context, name: str) -> Optional[click.Command]:
+    def get_command(self, ctx: click.Context, name: str) -> click.Command | None:
         m = {n: super(_Group, self).get_command(ctx, n) for n in self.list_commands(ctx) if n.startswith(name)}
         if name in m:
             return m[name]
@@ -46,7 +46,7 @@ class _Local(click.ParamType):
     name = 'text'
     CO_VARARGS = 0x0004
 
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
         m: dict[str, Any] = {}
         try:
             exec(value, {}, m)
@@ -66,11 +66,11 @@ class _Regex(click.ParamType):
 
     name = 'regex'
 
-    def __init__(self, group: Optional[Sequence[str]] = None) -> None:
+    def __init__(self, group: Sequence[str] | None = None) -> None:
         super().__init__()
         self.group = group or []
 
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
         try:
             value = re.compile(value)
         except re.error as e:
@@ -144,7 +144,7 @@ def cli() -> None:
 @click.option('-t', '--template',
               help='File template.')
 @_options(_stat_options)
-def generate(file: str, template: Optional[str], **opts: Any) -> None:
+def generate(file: str, template: str | None, **opts: Any) -> None:
     """Generate a file with the version."""
 
     opts = _merge_config(opts)
@@ -163,7 +163,7 @@ def generate(file: str, template: Optional[str], **opts: Any) -> None:
 @click.argument('spec')
 @click.option('-p', '--path',
               help='Search path for modules.')
-def load(spec: str, path: Optional[str]) -> None:
+def load(spec: str, path: str | None) -> None:
     """Show a value of the specified object.
 
     SPEC is in the "package.module:some.attribute" format.
@@ -210,14 +210,14 @@ def _merge_config(a: dict[str, Any]) -> dict[str, Any]:
     return (setuptools.load_cfg() or core.load_project() or {}) | a
 
 
-def _next_version(info: core.SCMInfo, **opts: Any) -> Optional[str]:
+def _next_version(info: core.SCMInfo, **opts: Any) -> str | None:
     kwargs = {k: opts[k]
               for k in ('spec', 'local', 'version')
               if opts[k] is not None}
     return core.next_version(info, **kwargs)
 
 
-def _stat(path: str, **opts: Any) -> Optional[core.SCMInfo]:
+def _stat(path: str, **opts: Any) -> core.SCMInfo | None:
     kwargs = {k: opts[n]
               for k, n in (
                   ('bazaar.tag', 'bzr_tag'),

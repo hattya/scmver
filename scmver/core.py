@@ -1,20 +1,20 @@
 #
 # scmver.core
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 from __future__ import annotations
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 import datetime
 import importlib
 import os
 import re
 import sys
 import textwrap
-from typing import cast, Any, NamedTuple, Optional, Union
+from typing import cast, Any, NamedTuple
 
 from ._typing import Path, Segment, RawSegment
 
@@ -82,7 +82,7 @@ _sep_re = re.compile(r'[-._]')
 _version_re = re.compile(r'(?P<version>v?\d+.*)\Z')
 
 
-def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None, template: str = _TEMPLATE) -> None:
+def generate(path: Path, version: str | None, info: SCMInfo | None = None, template: str = _TEMPLATE) -> None:
     kwargs: dict[str, Any] = {'version': version or ''}
     if info:
         kwargs.update(revision=info.revision or '',
@@ -91,7 +91,7 @@ def generate(path: Path, version: Optional[str], info: Optional[SCMInfo] = None,
         fp.write(template.format(**kwargs))
 
 
-def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
+def get_version(root: Path = '.', **kwargs: Any) -> str | None:
     def take(d: Mapping[str, str], *keys: str) -> dict[str, Any]:
         return {k: d[k] for k in d if k in keys}
 
@@ -112,7 +112,7 @@ def get_version(root: Path = '.', **kwargs: Any) -> Optional[str]:
     return None
 
 
-def load_version(spec: str, path: Optional[Path] = None) -> str:
+def load_version(spec: str, path: Path | None = None) -> str:
     v = spec.split(':')
     if len(v) != 2:
         raise ValueError('invalid format')
@@ -131,7 +131,7 @@ def load_version(spec: str, path: Optional[Path] = None) -> str:
     return cast(str, o() if callable(o) else o)
 
 
-def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: re.Pattern[str] = _version_re) -> Optional[str]:
+def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: re.Pattern[str] = _version_re) -> str | None:
     m = version.search(info.tag)
     if not m:
         raise VersionError('cannot parse version from SCM tag')
@@ -153,7 +153,7 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%
     return str(pv) if not lv else f'{pv}+{lv}'
 
 
-def load_project(path: Path = 'pyproject.toml') -> Optional[dict[str, Any]]:
+def load_project(path: Path = 'pyproject.toml') -> dict[str, Any] | None:
     try:
         if sys.version_info >= (3, 11):
             import tomllib as toml
@@ -189,14 +189,10 @@ def load_project(path: Path = 'pyproject.toml') -> Optional[dict[str, Any]]:
     return scmver
 
 
-def stat(path: Path, **kwargs: Any) -> Optional[SCMInfo]:
+def stat(path: Path, **kwargs: Any) -> SCMInfo | None:
     import importlib.metadata
 
-    impls: tuple[tuple[str, Callable[..., Optional[SCMInfo]]], ...]
-    if sys.version_info >= (3, 10):
-        impls = tuple((ep.name, ep.load()) for ep in importlib.metadata.entry_points(group='scmver.parse'))
-    else:
-        impls = tuple({(ep.name, ep.load()) for ep in importlib.metadata.entry_points().get('scmver.parse', [])})
+    impls = tuple((ep.name, ep.load()) for ep in importlib.metadata.entry_points(group='scmver.parse'))
     if not impls:
         from . import bazaar as bzr, darcs, fossil as fsl, git, mercurial as hg, subversion as svn
 
@@ -219,18 +215,18 @@ class SCMInfo(NamedTuple):
 
     tag: str = '0.0'
     distance: int = 0
-    revision: Optional[Union[int, str]] = None
+    revision: int | str | None = None
     dirty: bool = False
-    branch: Optional[str] = None
+    branch: str | None = None
 
 
 class Version:
 
     __slots__ = ('epoch', 'release', '_pre', '_post', '_dev', 'local')
 
-    _pre: Optional[RawSegment]
-    _post: Optional[RawSegment]
-    _dev: Optional[RawSegment]
+    _pre: RawSegment | None
+    _post: RawSegment | None
+    _dev: RawSegment | None
 
     def __init__(self, version: str) -> None:
         m = _pep440_re.match(version.strip())
@@ -270,15 +266,15 @@ class Version:
         return ''.join(buf)
 
     @property
-    def pre(self) -> Optional[Segment]:
+    def pre(self) -> Segment | None:
         return self._pre[1::2] if self._pre else None
 
     @property
-    def post(self) -> Optional[Segment]:
+    def post(self) -> Segment | None:
         return self._post[1::2] if self._post else None
 
     @property
-    def dev(self) -> Optional[Segment]:
+    def dev(self) -> Segment | None:
         return self._dev[1::2] if self._dev else None
 
     def normalize(self) -> Version:

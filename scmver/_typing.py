@@ -1,18 +1,18 @@
 #
 # scmver._typing
 #
-#   Copyright (c) 2022-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2022-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 import os
-from typing import Union
+from typing import TypeAlias
 
 
 __all__ = ['Path', 'Segment', 'RawSegment']
 
-Path = Union[str, os.PathLike[str]]
+Path: TypeAlias = str | os.PathLike[str]
 
-Segment = tuple[str, int]
-RawSegment = tuple[str, str, str, int]
+Segment: TypeAlias = tuple[str, int]
+RawSegment: TypeAlias = tuple[str, str, str, int]

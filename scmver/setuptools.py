@@ -1,14 +1,14 @@
 #
 # scmver.setuptools
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 from __future__ import annotations
 import configparser
-from typing import Any, Optional
+from typing import Any
 
 import setuptools
 
@@ -35,7 +35,7 @@ def scmver(dist: setuptools.Distribution, key: str, value: Any) -> None:
     dist.metadata.version = core.get_version(**value)
 
 
-def load_cfg(path: Path = 'setup.cfg') -> Optional[dict[str, Any]]:
+def load_cfg(path: Path = 'setup.cfg') -> dict[str, Any] | None:
     scmver: dict[str, Any] = {}
     try:
         cp = configparser.ConfigParser()

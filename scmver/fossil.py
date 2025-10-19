@@ -1,7 +1,7 @@
 #
 # scmver.fossil
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Optional
+from typing import Any
 
 from . import core, util
 from ._typing import Path
@@ -64,7 +64,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '.fslckout', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '.fslckout', **kwargs: Any) -> core.SCMInfo | None:
     if name in ('.fslckout', '_FOSSIL_'):
         info, changes = _status(root)
         if not info:
@@ -111,7 +111,7 @@ def _status(root: Path) -> tuple[dict[str, str], dict[str, list[str]]]:
     return info, changes
 
 
-def _branch_of(root: Path, closed: bool = False) -> Optional[str]:
+def _branch_of(root: Path, closed: bool = False) -> str | None:
     args = ['branch', 'list']
     if closed:
         args += ('-c',)

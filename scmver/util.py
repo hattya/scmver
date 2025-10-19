@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -12,7 +12,6 @@ import locale
 import os
 import subprocess
 import sys
-from typing import Optional
 
 from ._typing import Path
 
@@ -20,8 +19,8 @@ from ._typing import Path
 __all__ = ['exec_', 'command', 'which']
 
 
-def exec_(args: Sequence[Path], cwd: Optional[Path] = None, env: Optional[Mapping[str, str]] = None,
-          encoding: Optional[str] = None, errors: str = 'strict') -> tuple[str, str]:
+def exec_(args: Sequence[Path], cwd: Path | None = None, env: Mapping[str, str] | None = None,
+          encoding: str | None = None, errors: str = 'strict') -> tuple[str, str]:
     env = dict(env) if env else {}
     env['LC_MESSAGES'] = 'C'
     for k in ('LC_ALL', 'LANG', 'PATH', 'LD_LIBRARY_PATH', 'SystemRoot'):
@@ -46,7 +45,7 @@ def command(name: str, *args: str) -> str:
     raise OSError(f'command not found: {name}')
 
 
-def which(name: str) -> Optional[str]:
+def which(name: str) -> str | None:
     cands: list[str] = []
     if sys.platform == 'win32':
         cands += (name + ext for ext in os.environ['PATHEXT'].split(os.pathsep))

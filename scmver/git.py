@@ -1,7 +1,7 @@
 #
 # scmver.git
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import Any, Optional, Union
+from typing import Any
 
 from . import core, util
 from ._typing import Path
@@ -43,14 +43,14 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '.git', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '.git', **kwargs: Any) -> core.SCMInfo | None:
     if name == '.git':
         args = ['describe', '--dirty=+', '--tags', '--abbrev=40', '--long', '--always']
         if _TAG in kwargs:
             args += ('--match', kwargs[_TAG])
         out = run(*args, cwd=root)[0].strip().rsplit('-', 2)
 
-        branch: Optional[str] = run('rev-parse', '--abbrev-ref', 'HEAD', cwd=root)[0].strip()
+        branch: str | None = run('rev-parse', '--abbrev-ref', 'HEAD', cwd=root)[0].strip()
         if branch == 'HEAD':
             branch = run('symbolic-ref', '--short', 'HEAD', cwd=root)[0].strip() or None
 
@@ -67,12 +67,12 @@ def parse(root: Path, name: Optional[str] = '.git', **kwargs: Any) -> Optional[c
     return None
 
 
-def version() -> tuple[Union[int, str], ...]:
+def version() -> tuple[int | str, ...]:
     m = _version_re.match(run('--version')[0].strip())
     if not m:
         return ()
 
-    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[int | str, ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 4:
         v += (0,) * (4 - len(v))
     if m.group('alpha'):

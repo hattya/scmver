@@ -1,7 +1,7 @@
 #
 # test_core
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -217,12 +217,12 @@ class CoreTestCase(SCMVerTestCase):
         rev = self.revision(b'scmver.core.stat')
 
         with self.tempdir() as path:
-            with unittest.mock.patch('scmver.bazaar.parse') as bzr_parse, \
-                 unittest.mock.patch('scmver.darcs.parse') as darcs_parse, \
-                 unittest.mock.patch('scmver.fossil.parse') as fsl_parse, \
-                 unittest.mock.patch('scmver.git.parse') as git_parse, \
-                 unittest.mock.patch('scmver.mercurial.parse') as hg_parse, \
-                 unittest.mock.patch('scmver.subversion.parse') as svn_parse:
+            with (unittest.mock.patch('scmver.bazaar.parse') as bzr_parse,
+                  unittest.mock.patch('scmver.darcs.parse') as darcs_parse,
+                  unittest.mock.patch('scmver.fossil.parse') as fsl_parse,
+                  unittest.mock.patch('scmver.git.parse') as git_parse,
+                  unittest.mock.patch('scmver.mercurial.parse') as hg_parse,
+                  unittest.mock.patch('scmver.subversion.parse') as svn_parse):
                 path = Path(path)
                 self.assertIsNone(core.stat(path))
                 kwargs = {}
@@ -302,8 +302,8 @@ class CoreTestCase(SCMVerTestCase):
 
             self.assertIsNone(core.stat(path, **kwargs))
 
-        with self.tempdir() as path, \
-             unittest.mock.patch('importlib.metadata.entry_points') as entry_points:
+        with (self.tempdir() as path,
+              unittest.mock.patch('importlib.metadata.entry_points') as entry_points):
             path = Path(path)
             entry_points.return_value = {}
 

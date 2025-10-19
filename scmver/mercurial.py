@@ -1,7 +1,7 @@
 #
 # scmver.mercurial
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -9,7 +9,7 @@
 from __future__ import annotations
 import os
 import re
-from typing import cast, Any, Optional, Union
+from typing import cast, Any
 
 from . import core, util
 from ._typing import Path
@@ -38,7 +38,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '.hg', **kwargs: Any) -> core.SCMInfo | None:
     if name == '.hg':
         env = {'HGENCODING': 'utf-8'}
         out = run('identify', '-ib', cwd=root, env=env, encoding='utf-8')[0].strip().split()
@@ -63,7 +63,7 @@ def parse(root: Path, name: Optional[str] = '.hg', **kwargs: Any) -> Optional[co
             # NOTE: tags should also be encoded in UTF-8, but they are
             # encoded in the local encoding...
             with open(p, encoding='utf-8') as fp:
-                meta: dict[str, Union[str, list[str]]] = {'tag': []}
+                meta: dict[str, str | list[str]] = {'tag': []}
                 for l in fp:
                     k, v = (s.strip() for s in l.split(':', 1))
                     if k in ('tag', 'latesttag'):
@@ -91,13 +91,13 @@ def _tag_of(tag: str) -> str:
     return tag if tag != 'null' else '0.0'
 
 
-def version() -> tuple[Union[int, str], ...]:
+def version() -> tuple[int | str, ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[int | str, ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('alpha'):

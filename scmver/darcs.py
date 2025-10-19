@@ -1,7 +1,7 @@
 #
 # scmver.darcs
 #
-#   Copyright (c) 2021-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2021-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from typing import cast, Any, Optional
+from typing import cast, Any
 
 from . import core, util
 from ._typing import Path
@@ -39,7 +39,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '_darcs', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '_darcs', **kwargs: Any) -> core.SCMInfo | None:
     if name == '_darcs':
         info = _show_repo(root)
         if not info:

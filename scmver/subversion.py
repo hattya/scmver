@@ -1,7 +1,7 @@
 #
 # scmver.subversion
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 import os
 import re
-from typing import cast, Any, Optional, Union
+from typing import cast, Any
 import urllib.parse
 import xml.etree.ElementTree as ET
 
@@ -64,7 +64,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '.svn', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '.svn', **kwargs: Any) -> core.SCMInfo | None:
     if name == '.svn':
         info = _info(root)
         if not _is_wc_root(root, info):
@@ -126,7 +126,7 @@ def _is_wc_root(root: Path, info: Mapping[str, str]) -> bool:
     return False
 
 
-def _distance_of(root: Path, info: Mapping[str, str], rev: Union[int, str]) -> int:
+def _distance_of(root: Path, info: Mapping[str, str], rev: int | str) -> int:
     rev = str(rev)
     i = 0
     out = cast(ET.Element, run('log', '-r', f'{info.get("Revision", "BASE")}:{rev}', '--xml', cwd=root)[0])
@@ -136,7 +136,7 @@ def _distance_of(root: Path, info: Mapping[str, str], rev: Union[int, str]) -> i
     return i
 
 
-def _branch_of(info: Mapping[str, str], **kwargs: str) -> Optional[str]:
+def _branch_of(info: Mapping[str, str], **kwargs: str) -> str | None:
     url = info['URL']
     trunk = info['Repository Root'] + _rel(_TRUNK, 'trunk', **kwargs)
     if (url == trunk[:-1]
@@ -152,13 +152,13 @@ def _rel(key: str, default: str, **kwargs: str) -> str:
     return '/' + os.path.normpath(kwargs.get(key, default)).replace(os.sep, '/').strip('/') + '/'
 
 
-def version() -> tuple[Union[int, str], ...]:
+def version() -> tuple[int | str, ...]:
     out = cast(str, run('--version')[0]).splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[int | str, ...] = tuple(map(int, m.group('release').split('.')))
     if m.group('pre_s'):
         s = m.group('pre_s')
         v += (s[0] if s != 'rc' else s, int(m.group('pre_n')))
@@ -167,7 +167,7 @@ def version() -> tuple[Union[int, str], ...]:
     return v
 
 
-def run(*args: str, **kwargs: Any) -> tuple[Union[str, ET.Element], str]:
+def run(*args: str, **kwargs: Any) -> tuple[str | ET.Element, str]:
     if xml := '--xml' in args:
         kwargs['encoding'] = 'utf-8'
     out, err = util.exec_((util.command('svn'), '--non-interactive') + args, **kwargs)

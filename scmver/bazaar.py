@@ -1,14 +1,14 @@
 #
 # scmver.bazaar
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
 
 from __future__ import annotations
 import re
-from typing import cast, Any, Optional, Union
+from typing import cast, Any
 
 from . import core, util
 from ._typing import Path
@@ -46,7 +46,7 @@ _version_re = re.compile(r"""
 """, re.VERBOSE)
 
 
-def parse(root: Path, name: Optional[str] = '.bzr', **kwargs: Any) -> Optional[core.SCMInfo]:
+def parse(root: Path, name: str | None = '.bzr', **kwargs: Any) -> core.SCMInfo | None:
     if name == '.bzr':
         info = _version_info(root)
         if not info:
@@ -74,7 +74,7 @@ def _version_info(root: Path) -> dict[str, str]:
     return dict(cast(tuple[str, str], (s.strip() for s in l.split(':', 1))) for l in out)
 
 
-def _distance_of(root: Path, rev: Optional[Union[int, str]] = None) -> int:
+def _distance_of(root: Path, rev: int | str | None = None) -> int:
     if rev is None:
         rev = 1
         off = 0
@@ -83,13 +83,13 @@ def _distance_of(root: Path, rev: Optional[Union[int, str]] = None) -> int:
     return len(run('log', '-r', f'{rev}..', '-n', '0', '--line', cwd=root)[0].splitlines()) - off
 
 
-def version() -> tuple[Union[int, str], ...]:
+def version() -> tuple[int | str, ...]:
     out = run('version')[0].splitlines()
     m = _version_re.match(out[0] if out else '')
     if not m:
         return ()
 
-    v: tuple[Union[int, str], ...] = tuple(map(int, m.group('release').split('.')))
+    v: tuple[int | str, ...] = tuple(map(int, m.group('release').split('.')))
     if len(v) < 3:
         v += (0,) * (3 - len(v))
     if m.group('pre_s'):
