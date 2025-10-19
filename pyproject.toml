@@ -28,6 +28,7 @@ classifiers = [
     "Topic :: Software Development :: Version Control",
     "Topic :: System :: Software Distribution",
     "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 requires-python = ">= 3.9"
 dynamic = [
