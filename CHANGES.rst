@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.9
 -----------
 
+Release date: 2025-10-27
+
 * Support Python 3.14.
 * Drop Python 3.9 support.
 
