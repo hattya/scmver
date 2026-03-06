@@ -1,7 +1,7 @@
 #
 # test_cli
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -60,28 +60,28 @@ class CLITestCase(SCMVerTestCase):
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0'")
+                self.assertEqual(fp.read().splitlines()[-1], "version: str = '1.0'")
 
         stat.return_value = core.SCMInfo('v1.0', 1, rev, False, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], "version = '1.0.post'")
+                self.assertEqual(fp.read().splitlines()[-1], "version: str = '1.0.post'")
 
         stat.return_value = core.SCMInfo('v1.0', 0, rev, True, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0+{datetime.datetime.now():%Y-%m-%d}'")
+                self.assertEqual(fp.read().splitlines()[-1], f"version: str = '1.0+{datetime.datetime.now():%Y-%m-%d}'")
 
         stat.return_value = core.SCMInfo('v1.0', 1, rev, True, 'master')
         with self.tempfile() as path:
             rv = self.invoke(['generate', path])
             self.assertEqual(rv.exit_code, 0)
             with open(path) as fp:
-                self.assertEqual(fp.read().splitlines()[-1], f"version = '1.0.post+{datetime.datetime.now():%Y-%m-%d}'")
+                self.assertEqual(fp.read().splitlines()[-1], f"version: str = '1.0.post+{datetime.datetime.now():%Y-%m-%d}'")
 
     def test_generate_with_template(self, stat):
         rev = self.revision(b'scmver.cli.generate')

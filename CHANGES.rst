@@ -1,6 +1,12 @@
 scmver Changelog
 ================
 
+Version 1.10
+------------
+
+* Add type annotations to the default template.
+
+
 Version 1.9
 -----------
 
