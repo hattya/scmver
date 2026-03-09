@@ -1,7 +1,7 @@
 #
 # test_darcs
 #
-#   Copyright (c) 2021-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2021-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -43,10 +43,6 @@ class DarcsTestCase(SCMVerTestCase):
         os.chdir(self.root)
         darcs.run('clone', self.branch, branch)
         os.chdir(os.path.join(self.root, branch))
-
-    def touch(self, path):
-        with open(path, 'w'):
-            pass
 
     def test_empty(self):
         for name in ('_', '_darcs'):

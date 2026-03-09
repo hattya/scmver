@@ -1,7 +1,7 @@
 #
 # test_mercurial
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -48,10 +48,6 @@ class MercurialTestCase(SCMVerTestCase):
                 yield path
             finally:
                 os.chdir(self.root)
-
-    def touch(self, path):
-        with open(path, 'w'):
-            pass
 
     def test_empty(self):
         for name in ('_', '.hg', '.hg_archival.txt'):

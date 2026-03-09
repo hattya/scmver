@@ -1,7 +1,7 @@
 #
 # scmver.subversion
 #
-#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -149,7 +149,7 @@ def _branch_of(info: Mapping[str, str], **kwargs: str) -> str | None:
 
 
 def _rel(key: str, default: str, **kwargs: str) -> str:
-    return '/' + os.path.normpath(kwargs.get(key, default)).replace(os.sep, '/').strip('/') + '/'
+    return f'/{os.path.normpath(kwargs.get(key, default)).replace(os.sep, "/").strip("/")}/'
 
 
 def version() -> tuple[int | str, ...]:

@@ -1,7 +1,7 @@
 #
 # scmver.util
 #
-#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -52,7 +52,6 @@ def which(name: str) -> str | None:
     cands.append(name)
     for p in os.environ['PATH'].split(os.pathsep):
         for n in cands:
-            name = os.path.join(p, n)
-            if os.path.isfile(name):
+            if os.path.isfile(name := os.path.join(p, n)):
                 return name
     return None

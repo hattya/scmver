@@ -1,7 +1,7 @@
 #
 # test_fossil
 #
-#   Copyright (c) 2019-2022 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -38,10 +38,6 @@ class FossilTestCase(SCMVerTestCase):
         self.checkout.mkdir(parents=True)
         os.chdir(self.checkout)
         fsl.run('open', repo)
-
-    def touch(self, path):
-        with open(path, 'w'):
-            pass
 
     def test_empty(self):
         for name in ('_', '.fslckout', '_FOSSIL_'):
@@ -136,7 +132,8 @@ class FossilTestCase(SCMVerTestCase):
 
     def test_status(self):
         self.init()
-        self.touch('file')
+        self.touch('spam')
+        self.touch('eggs')
 
         info = fsl.parse(Path(), name='_FOSSIL_')
         self.assertEqual(info.tag, '0.0')

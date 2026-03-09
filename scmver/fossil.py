@@ -1,7 +1,7 @@
 #
 # scmver.fossil
 #
-#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -104,9 +104,9 @@ def _status(root: Path) -> tuple[dict[str, str], dict[str, list[str]]]:
         v = l.split(None, 1)
         if v[0].endswith(':'):
             info[v[0].rstrip(':')] = v[1]
+        elif v[0] not in changes:
+            changes[v[0]] = [v[1]]
         else:
-            if v[0] not in changes:
-                changes[v[0]] = []
             changes[v[0]].append(v[1])
     return info, changes
 

@@ -1,7 +1,7 @@
 #
 # scmver.cli
 #
-#   Copyright (c) 2019-2025 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -30,12 +30,12 @@ def run(args: Sequence[str] | None = None) -> None:
 
 class _Group(click.Group):
 
-    def get_command(self, ctx: click.Context, name: str) -> click.Command | None:
-        m = {n: super(_Group, self).get_command(ctx, n) for n in self.list_commands(ctx) if n.startswith(name)}
-        if name in m:
-            return m[name]
+    def get_command(self, ctx: click.Context, cmd_name: str) -> click.Command | None:
+        m = {n: super(_Group, self).get_command(ctx, n) for n in self.list_commands(ctx) if n.startswith(cmd_name)}
+        if cmd_name in m:
+            return m[cmd_name]
         elif len(m) > 1:
-            ctx.fail(f'command "{name}" is ambiguous: {" ".join(sorted(m))}')
+            ctx.fail(f'command "{cmd_name}" is ambiguous: {" ".join(sorted(m))}')
         for cmd in m.values():
             return cmd
         return None

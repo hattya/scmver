@@ -1,7 +1,7 @@
 #
 # test_bazaar
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -43,10 +43,6 @@ class BazaarTestCase(SCMVerTestCase):
         bzr.run('init', self.branch)
         os.chdir(self.branch)
         bzr.run('whoami', '--branch', 'scmver <scmver@example.com>')
-
-    def touch(self, path):
-        with open(path, 'w'):
-            pass
 
     def test_empty(self):
         for name in ('_', '.bzr'):

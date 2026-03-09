@@ -1,7 +1,7 @@
 #
 # base
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -54,6 +54,10 @@ class SCMVerTestCase(unittest.TestCase):
             yield path
         finally:
             os.unlink(path)
+
+    def touch(self, path):
+        with open(path, 'w'):
+            pass
 
     def revision(self, data):
         m = hashlib.new('sha1')
