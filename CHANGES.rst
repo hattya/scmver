@@ -5,6 +5,7 @@ Version 1.10
 ------------
 
 * Add type annotations to the default template.
+* Improve type annotations.
 
 
 Version 1.9

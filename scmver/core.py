@@ -7,7 +7,7 @@
 #
 
 from __future__ import annotations
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 import datetime
 import importlib
 import os
@@ -131,7 +131,8 @@ def load_version(spec: str, path: Path | None = None) -> str:
     return cast(str, o() if callable(o) else o)
 
 
-def next_version(info: SCMInfo, spec: str = 'post', local: str = '{local:%Y-%m-%d}', version: re.Pattern[str] = _version_re) -> str | None:
+def next_version(info: SCMInfo, spec: str = 'post', local: str | Callable[[SCMInfo], str] = '{local:%Y-%m-%d}',
+                 version: re.Pattern[str] = _version_re) -> str | None:
     m = version.search(info.tag)
     if not m:
         raise VersionError('cannot parse version from SCM tag')
