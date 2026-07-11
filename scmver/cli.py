@@ -22,6 +22,7 @@ from . import __version__, core, setuptools
 __all__ = ['run']
 
 F: TypeAlias = Callable[..., Any]
+LF: TypeAlias = Callable[[core.SCMInfo], str]
 
 
 def run(args: Sequence[str] | None = None) -> None:
@@ -41,28 +42,30 @@ class _Group(click.Group):
         return None
 
 
-class _Local(click.ParamType):
+class _Local(click.ParamType[str | LF]):
 
     name = 'text'
     CO_VARARGS = 0x0004
 
-    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> str | LF:
         m: dict[str, Any] = {}
         try:
             exec(value, {}, m)
         except (NameError, SyntaxError):
-            return value
+            s: str = value
+            return s
 
         for v in m.values():
             if callable(v):
                 if (v.__code__.co_argcount < 1
                     and not v.__code__.co_flags & self.CO_VARARGS):
                     self.fail(f'"{v}" does not have arguments.', param, ctx)
-                return v
+                f: LF = v
+                return f
         self.fail('Callable object does not found.', param, ctx)
 
 
-class _Regex(click.ParamType):
+class _Regex(click.ParamType[re.Pattern[str]]):
 
     name = 'regex'
 
@@ -70,15 +73,15 @@ class _Regex(click.ParamType):
         super().__init__()
         self.group = group or []
 
-    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> re.Pattern[str]:
         try:
-            value = re.compile(value)
+            rv = re.compile(value)
         except re.error as e:
             self.fail(str(e), param, ctx)
         for g in self.group:
-            if g not in value.groupindex:
+            if g not in rv.groupindex:
                 self.fail(f'Regex does not have the {g} group.', param, ctx)
-        return value
+        return rv
 
 
 def _options(options: Sequence[F]) -> F:
