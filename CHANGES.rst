@@ -8,6 +8,7 @@ Version 1.10
 * Improve type annotations.
 * Adapt type annotations to Click 8.4+.
 * Drop Python 3.10 support.
+* Support Python 3.15.
 
 
 Version 1.9

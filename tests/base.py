@@ -31,7 +31,7 @@ class SCMVerTestCase(unittest.TestCase):
         locale.setlocale(locale.LC_ALL, cls._lc)
 
     def check_locale(self):
-        if locale.getpreferredencoding(False).lower() not in ('cp932', 'euc-jp', 'utf-8'):
+        if locale.getencoding().lower() not in ('cp932', 'euc-jp', 'utf-8'):
             self.skipTest('requires UTF-8 or Japanese locale')
 
     def tempdir(self):

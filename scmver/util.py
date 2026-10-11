@@ -27,7 +27,7 @@ def exec_(args: Sequence[Path], cwd: Path | None = None, env: Mapping[str, str] 
         if k in os.environ:
             env[k] = os.environ[k]
     if encoding is None:
-        encoding = locale.getpreferredencoding(False)
+        encoding = locale.getencoding()
 
     proc = subprocess.run(args,
                           capture_output=True,
