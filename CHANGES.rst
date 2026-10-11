@@ -7,6 +7,7 @@ Version 1.10
 * Add type annotations to the default template.
 * Improve type annotations.
 * Adapt type annotations to Click 8.4+.
+* Drop Python 3.10 support.
 
 
 Version 1.9

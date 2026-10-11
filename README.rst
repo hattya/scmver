@@ -30,7 +30,7 @@ Installation
 Requirements
 ------------
 
-- Python 3.10+
+- Python 3.11+
 - setuptools
 
 
@@ -45,7 +45,7 @@ pyproject.toml
    [build-system]
    requires = [
        "setuptools >= 42.0",
-       "scmver[toml] >= 1.7",
+       "scmver >= 1.7",
    ]
    build-backend = "setuptools.build_meta"
 

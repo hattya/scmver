@@ -1,7 +1,7 @@
 #
 # test_setuptools
 #
-#   Copyright (c) 2019-2024 Akinori Hattori <hattya@gmail.com>
+#   Copyright (c) 2019-2026 Akinori Hattori <hattya@gmail.com>
 #
 #   SPDX-License-Identifier: MIT
 #
@@ -12,7 +12,7 @@ import textwrap
 from setuptools import Distribution
 
 from scmver import core, setuptools
-from base import requires_tomli, SCMVerTestCase
+from base import SCMVerTestCase
 
 
 class SetuptoolsTestCase(SCMVerTestCase):
@@ -45,7 +45,7 @@ class SetuptoolsTestCase(SCMVerTestCase):
                 [build-system]
                 requires = [
                     "setuptools >= 42.0",
-                    "scmver[toml] >= 1.7",
+                    "scmver >= 1.7",
                 ]
                 build-backend = "setuptools.build_meta"
             """))
@@ -77,13 +77,11 @@ class SetuptoolsTestCase(SCMVerTestCase):
         fp.write(core._TEMPLATE.format(**kwargs))
         fp.flush()
 
-    @requires_tomli
     def test_finalize_version(self):
         self.init()
         self.assertIsNone(self.finalize_version(None))
         self.assertEqual(self.finalize_version({}), '1.0')
 
-    @requires_tomli
     def test_finalize_version_fallback(self):
         os.mkdir('src')
 

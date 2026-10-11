@@ -147,7 +147,7 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str | Callable[[SCMIn
         lv = local.format(distance=info.distance,
                           revision=info.revision,
                           branch=info.branch,
-                          utc=datetime.datetime.now(datetime.timezone.utc),
+                          utc=datetime.datetime.now(datetime.UTC),
                           local=datetime.datetime.now())
     else:
         lv = None
@@ -156,10 +156,7 @@ def next_version(info: SCMInfo, spec: str = 'post', local: str | Callable[[SCMIn
 
 def load_project(path: Path = 'pyproject.toml') -> dict[str, Any] | None:
     try:
-        if sys.version_info >= (3, 11):
-            import tomllib as toml
-        else:
-            import tomli as toml
+        import tomllib as toml
     except ImportError:
         return None
 

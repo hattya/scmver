@@ -15,7 +15,7 @@ import unittest
 import unittest.mock
 
 from scmver import core
-from base import requires_tomli, SCMVerTestCase
+from base import SCMVerTestCase
 
 
 class CoreTestCase(SCMVerTestCase):
@@ -126,7 +126,6 @@ class CoreTestCase(SCMVerTestCase):
         with self.assertRaises(core.VersionError):
             core.next_version(core.SCMInfo('', 0, rev, False, 'master'))
 
-    @requires_tomli
     @unittest.mock.patch.dict('sys.modules')
     def test_load_project(self):
         with self.tempdir() as path:
@@ -136,7 +135,7 @@ class CoreTestCase(SCMVerTestCase):
                     [build-system]
                     requires = [
                         "setuptools >= 42.0",
-                        "scmver[toml] >= 1.7",
+                        "scmver >= 1.7",
                     ]
                     build-backend = "setuptools.build_meta"
                 """)
@@ -203,10 +202,7 @@ class CoreTestCase(SCMVerTestCase):
             })
 
             # ImportError
-            if sys.version_info >= (3, 11):
-                toml = 'tomllib'
-            else:
-                toml = 'tomli'
+            toml = 'tomllib'
             for m in tuple(sys.modules):
                 if m.startswith(toml):
                     del sys.modules[m]

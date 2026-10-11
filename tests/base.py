@@ -11,21 +11,12 @@ import hashlib
 import locale
 import os
 import shutil
-import sys
 import tempfile
 import textwrap
 import unittest
 
-try:
-    import tomli
-except ImportError:
-    tomli = None
 
-
-__all__ = ['requires_tomli', 'SCMVerTestCase']
-
-
-requires_tomli = unittest.skipUnless(sys.version_info >= (3, 11) or tomli, 'requires tomli')
+__all__ = ['SCMVerTestCase']
 
 
 class SCMVerTestCase(unittest.TestCase):
