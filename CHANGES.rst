@@ -4,6 +4,8 @@ scmver Changelog
 Version 1.10
 ------------
 
+Release date: 2026-10-17
+
 * Add type annotations to the default template.
 * Improve type annotations.
 * Adapt type annotations to Click 8.4+.
